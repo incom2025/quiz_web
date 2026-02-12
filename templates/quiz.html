@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Тест</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#F3F4F6;margin:0}
+    .wrap{max-width:980px;margin:24px auto;background:#fff;border:1px solid #D1D5DB;border-radius:12px;padding:22px}
+    .top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .muted{color:#6B7280}
+    .q{margin:18px 0;padding:16px;border:1px solid #E5E7EB;border-radius:12px}
+    .q h3{margin:0 0 10px}
+    .opt{display:block;margin:6px 0}
+    button{background:#111827;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-size:16px;cursor:pointer}
+    #timer{font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="muted">
+        Студент: <b>{{ surname }} {{ name }}</b> | Група: <b>{{ grp }}</b>
+      </div>
+      <div>Час: <span id="timer">--:--</span></div>
+    </div>
+
+    <form id="quizForm" method="post" action="/submit/{{ session_id }}">
+      {% for q in questions %}
+      <div class="q">
+        <h3>{{ loop.index }}. {{ q["Question"] }}</h3>
+
+        <label class="opt"><input type="radio" name="answers" value="A"> A) {{ q["A"] }}</label>
+        <label class="opt"><input type="radio" name="answers" value="B"> B) {{ q["B"] }}</label>
+        <label class="opt"><input type="radio" name="answers" value="C"> C) {{ q["C"] }}</label>
+        <label class="opt"><input type="radio" name="answers" value="D"> D) {{ q["D"] }}</label>
+      </div>
+      {% endfor %}
+
+      <button type="submit">Завершити тест</button>
+    </form>
+  </div>
+
+<script>
+  // клієнтський таймер
+  let remaining = {{ remaining }};
+  const timerEl = document.getElementById("timer");
+  const form = document.getElementById("quizForm");
+
+  function fmt(s){
+    const m = Math.floor(s/60);
+    const ss = s%60;
+    return String(m).padStart(2,'0') + ":" + String(ss).padStart(2,'0');
+  }
+  function tick(){
+    timerEl.textContent = fmt(remaining);
+    if(remaining <= 0){
+      alert("Час вийшов. Тест буде надіслано.");
+      form.submit();
+      return;
+    }
+    remaining -= 1;
+    setTimeout(tick, 1000);
+  }
+  tick();
+</script>
+</body>
+</html>

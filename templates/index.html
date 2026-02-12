@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Онлайн тест</title>
+  <style>
+    body{font-family:Arial, sans-serif;background:#F3F4F6;margin:0}
+    .wrap{max-width:720px;margin:40px auto;background:#fff;border:1px solid #D1D5DB;border-radius:12px;padding:22px}
+    label{display:block;margin:12px 0 6px}
+    input{width:100%;padding:10px;border:1px solid #D1D5DB;border-radius:10px;font-size:16px}
+    button{margin-top:16px;background:#111827;color:#fff;border:none;padding:12px 16px;border-radius:10px;font-size:16px;cursor:pointer}
+    .muted{color:#6B7280}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Тестування студентів</h2>
+    <p class="muted">Питань: <b>{{ questions_per_test }}</b>. Час: <b>{{ duration_sec//60 }} хв</b>.</p>
+
+    <form method="post" action="/start">
+      <label>Прізвище</label>
+      <input name="surname" required />
+
+      <label>Ім'я</label>
+      <input name="name" required />
+
+      <label>Група</label>
+      <input name="grp" required />
+
+      <button type="submit">Почати тест</button>
+    </form>
+
+    <hr style="margin:18px 0;border:none;border-top:1px solid #eee">
+    <p class="muted">Викладачу: експорт результатів → <a href="/admin/export">results.xlsx</a></p>
+  </div>
+</body>
+</html>
