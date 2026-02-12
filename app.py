@@ -1,6 +1,11 @@
 import os
 from fastapi import HTTPException
+from fastapi import Request
+from fastapi.responses import HTMLResponse
 
+@app.get("/", response_class=HTMLResponse)
+def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 import csv
 import random
@@ -220,4 +225,5 @@ def admin_export(key: str):
 
     path = export_results_to_xlsx("results.xlsx")
     return FileResponse(path, filename="results.xlsx")
+
 
