@@ -233,4 +233,7 @@ def test_admin():
     return {"admin_route_exists": True}
 
 
+@app.get("/ping")
+def ping():
+    return {"ok": True}
 
