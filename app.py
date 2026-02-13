@@ -222,5 +222,8 @@ def admin_export(key: str):
     path = export_results_to_xlsx("results.xlsx")
     return FileResponse(path, filename="results.xlsx")
 
+@app.get("/test-admin")
+def test_admin():
+    return {"admin_route_exists": True}
 
 
