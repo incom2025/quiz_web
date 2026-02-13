@@ -20,7 +20,13 @@ TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
-app = FastAPI()
+app = FastAPI(
+    title="LNU Quiz",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
+
 templates = Jinja2Templates(directory="templates")
 
 # Сесії у памʼяті (для 1 інстансу достатньо)
@@ -225,5 +231,6 @@ def admin_export(key: str):
 @app.get("/test-admin")
 def test_admin():
     return {"admin_route_exists": True}
+
 
 
