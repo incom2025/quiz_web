@@ -13,7 +13,6 @@ from fastapi.templating import Jinja2Templates
 # =========================
 # Налаштування
 # =========================
-
 CSV_FILE = os.getenv("CSV_FILE", "questions.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
@@ -32,11 +31,21 @@ templates = Jinja2Templates(directory="templates")
 # Сесії у памʼяті (для 1 інстансу достатньо)
 SESSIONS: Dict[str, Dict[str, Any]] = {}
 
+# =========================
+# Діагностика
+# =========================
+@app.get("/ping")
+def ping():
+    return {"ok": True, "ts": datetime.now().isoformat(timespec="seconds")}
+
+@app.get("/__routes")
+def list_routes():
+    # Показує, які маршрути реально зареєстровані в цьому деплої
+    return sorted([getattr(r, "path", "") for r in app.router.routes])
 
 # =========================
 # Робота з питаннями
 # =========================
-
 def load_questions_from_csv(path: str) -> List[dict]:
     if not os.path.exists(path):
         raise FileNotFoundError(f"Не знайдено файл з питаннями: {path}")
@@ -76,11 +85,9 @@ def load_questions_from_csv(path: str) -> List[dict]:
 
         return questions
 
-
 # =========================
 # База даних
 # =========================
-
 def db_init():
     with sqlite3.connect(DB_FILE) as con:
         con.execute("""
@@ -96,16 +103,13 @@ def db_init():
         """)
         con.commit()
 
-
 def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
     with sqlite3.connect(DB_FILE) as con:
         con.execute(
             "INSERT INTO results(ts, surname, name, grp, score, total) VALUES(?,?,?,?,?,?)",
-            (datetime.now().isoformat(timespec="seconds"),
-             surname, name, grp, score, total),
+            (datetime.now().isoformat(timespec="seconds"), surname, name, grp, score, total),
         )
         con.commit()
-
 
 def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     from openpyxl import Workbook
@@ -126,16 +130,13 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     wb.save(xlsx_path)
     return xlsx_path
 
-
 @app.on_event("startup")
 def startup():
     db_init()
 
-
 # =========================
 # Маршрути
 # =========================
-
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse("index.html", {
@@ -143,7 +144,6 @@ def index(request: Request):
         "duration_sec": TEST_DURATION_SECONDS,
         "questions_per_test": QUESTIONS_PER_TEST
     })
-
 
 @app.post("/start")
 def start(
@@ -162,7 +162,6 @@ def start(
     picked = random.sample(all_q, QUESTIONS_PER_TEST)
 
     session_id = secrets.token_urlsafe(16)
-
     SESSIONS[session_id] = {
         "surname": surname,
         "name": name,
@@ -172,7 +171,6 @@ def start(
     }
 
     return RedirectResponse(f"/quiz/{session_id}", status_code=303)
-
 
 @app.get("/quiz/{session_id}", response_class=HTMLResponse)
 def quiz(request: Request, session_id: str):
@@ -193,7 +191,6 @@ def quiz(request: Request, session_id: str):
         "remaining": remaining,
     })
 
-
 @app.post("/submit/{session_id}", response_class=HTMLResponse)
 def submit(request: Request, session_id: str, answers: List[str] = Form(default=[])):
     sess = SESSIONS.get(session_id)
@@ -208,9 +205,7 @@ def submit(request: Request, session_id: str, answers: List[str] = Form(default=
         if a == q["Prav_vid"]:
             score += 1
 
-    db_insert_result(sess["surname"], sess["name"], sess["grp"],
-                     score, len(questions))
-
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
     SESSIONS.pop(session_id, None)
 
     return templates.TemplateResponse("result.html", {
@@ -219,7 +214,6 @@ def submit(request: Request, session_id: str, answers: List[str] = Form(default=
         "total": len(questions),
     })
 
-
 @app.get("/admin/export")
 def admin_export(key: str):
     if key != ADMIN_KEY:
@@ -227,13 +221,3 @@ def admin_export(key: str):
 
     path = export_results_to_xlsx("results.xlsx")
     return FileResponse(path, filename="results.xlsx")
-
-@app.get("/test-admin")
-def test_admin():
-    return {"admin_route_exists": True}
-
-
-@app.get("/ping")
-def ping():
-    return {"ok": True}
-
