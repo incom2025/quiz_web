@@ -5,10 +5,12 @@ import secrets
 import sqlite3
 from datetime import datetime
 from typing import Dict, List, Any
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
+
 
 # =========================
 # Налаштування
@@ -19,66 +21,6 @@ TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
-app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-
-SESSIONS: Dict[str, Dict[str, Any]] = {}
-
-# =========================
-# Debug endpoints (щоб перевірити деплой)
-# =========================
-@app.get("/ping", response_class=PlainTextResponse)
-def ping():
-    return "ok"
-
-@app.get("/routes")
-def routes():
-    # Показує всі зареєстровані маршрути
-    out = []
-    for r in app.routes:
-        methods = ",".join(sorted(getattr(r, "methods", []) or []))
-        out.append({"path": getattr(r, "path", ""), "methods": methods, "name": getattr(r, "name", "")})
-    return out
-
-# =========================
-# Робота з питаннями
-# =========================
-def load_questions_from_csv(path: str) -> List[dict]:
-    if not os.path.exists(path):
-        raise FileNotFoundError(f"Не знайдено файл з питаннями: {path}")
-
-    with open(path, "r", encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
-        required = {"Question", "A", "B", "C", "D", "Prav_vid"}
-        if not required.issubset(set(reader.fieldnames or [])):
-            raise ValueError(
-                f"CSV має містити колонки: {', '.join(sorted(required))}. "
-                f"Зараз є: {reader.fieldnames}"
-            )
-
-        questions = []
-        for row in reader:
-            pv = (row.get("Prav_vid") or "").strip().upper()
-            if pv not in {"A", "B", "C", "D"}:
-                continue
-
-            q = {
-                "Question": (row.get("Question") or "").strip(),
-                "A": (row.get("A") or "").strip(),
-                "B": (row.get("B") or "").strip(),
-                "C": (row.get("C") or "").strip(),
-                "D": (row.get("D") or "").strip(),
-                "Prav_vid": pv,
-            }
-            if q["Question"] and all(q[k] for k in ["A", "B", "C", "D"]):
-                questions.append(q)
-
-        if len(questions) < QUESTIONS_PER_TEST:
-            raise ValueError(
-                f"У CSV замало коректних питань: {len(questions)}. "
-                f"Потрібно щонайменше {QUESTIONS_PER_TEST}."
-            )
-        return questions
 
 # =========================
 # База даних
@@ -98,6 +40,7 @@ def db_init():
         """)
         con.commit()
 
+
 def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
     with sqlite3.connect(DB_FILE) as con:
         con.execute(
@@ -105,6 +48,7 @@ def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
             (datetime.now().isoformat(timespec="seconds"), surname, name, grp, score, total),
         )
         con.commit()
+
 
 def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     from openpyxl import Workbook
@@ -125,9 +69,87 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     wb.save(xlsx_path)
     return xlsx_path
 
-@app.on_event("startup")
-def startup():
-    db_init()
+
+# =========================
+# Lifespan (замість on_event)
+# =========================
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db_init()  # startup
+    yield
+    # shutdown (за потреби можна додати логіку)
+
+
+app = FastAPI(lifespan=lifespan)
+templates = Jinja2Templates(directory="templates")
+
+SESSIONS: Dict[str, Dict[str, Any]] = {}
+
+
+# =========================
+# Debug endpoints (щоб перевірити деплой)
+# =========================
+@app.get("/ping", response_class=PlainTextResponse)
+def ping():
+    return "ok"
+
+
+@app.get("/routes")
+def routes():
+    out = []
+    for r in app.routes:
+        methods = ",".join(sorted(getattr(r, "methods", []) or []))
+        out.append({
+            "path": getattr(r, "path", ""),
+            "methods": methods,
+            "name": getattr(r, "name", "")
+        })
+    return out
+
+
+# =========================
+# Робота з питаннями
+# =========================
+def load_questions_from_csv(path: str) -> List[dict]:
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Не знайдено файл з питаннями: {path}")
+
+    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        required = {"Question", "A", "B", "C", "D", "Prav_vid"}
+
+        if not required.issubset(set(reader.fieldnames or [])):
+            raise ValueError(
+                f"CSV має містити колонки: {', '.join(sorted(required))}. "
+                f"Зараз є: {reader.fieldnames}"
+            )
+
+        questions = []
+        for row in reader:
+            pv = (row.get("Prav_vid") or "").strip().upper()
+            if pv not in {"A", "B", "C", "D"}:
+                continue
+
+            q = {
+                "Question": (row.get("Question") or "").strip(),
+                "A": (row.get("A") or "").strip(),
+                "B": (row.get("B") or "").strip(),
+                "C": (row.get("C") or "").strip(),
+                "D": (row.get("D") or "").strip(),
+                "Prav_vid": pv,
+            }
+
+            if q["Question"] and all(q[k] for k in ["A", "B", "C", "D"]):
+                questions.append(q)
+
+        if len(questions) < QUESTIONS_PER_TEST:
+            raise ValueError(
+                f"У CSV замало коректних питань: {len(questions)}. "
+                f"Потрібно щонайменше {QUESTIONS_PER_TEST}."
+            )
+
+        return questions
+
 
 # =========================
 # Маршрути
@@ -139,6 +161,7 @@ def index(request: Request):
         "duration_sec": TEST_DURATION_SECONDS,
         "questions_per_test": QUESTIONS_PER_TEST
     })
+
 
 @app.post("/start")
 def start(
@@ -167,6 +190,7 @@ def start(
 
     return RedirectResponse(f"/quiz/{session_id}", status_code=303)
 
+
 @app.get("/quiz/{session_id}", response_class=HTMLResponse)
 def quiz(request: Request, session_id: str):
     sess = SESSIONS.get(session_id)
@@ -186,17 +210,20 @@ def quiz(request: Request, session_id: str):
         "remaining": remaining,
     })
 
+
+# ✅ ВАЖЛИВО: тепер відповіді приходять як q0, q1, q2... (див. quiz.html)
 @app.post("/submit/{session_id}", response_class=HTMLResponse)
-def submit(request: Request, session_id: str, answers: List[str] = Form(default=[])):
+async def submit(request: Request, session_id: str):
     sess = SESSIONS.get(session_id)
     if not sess:
         return RedirectResponse("/", status_code=303)
 
+    form = await request.form()
     questions = sess["questions"]
     score = 0
 
     for i, q in enumerate(questions):
-        a = (answers[i] if i < len(answers) else "").strip().upper()
+        a = (form.get(f"q{i}") or "").strip().upper()
         if a == q["Prav_vid"]:
             score += 1
 
@@ -208,6 +235,7 @@ def submit(request: Request, session_id: str, answers: List[str] = Form(default=
         "score": score,
         "total": len(questions),
     })
+
 
 @app.get("/admin/export")
 def admin_export(key: str = Query(...)):
