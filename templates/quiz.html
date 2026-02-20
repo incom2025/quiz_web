@@ -30,10 +30,11 @@
       <div class="q">
         <h3>{{ loop.index }}. {{ q["Question"] }}</h3>
 
-        <label class="opt"><input type="radio" name="answers" value="A"> A) {{ q["A"] }}</label>
-        <label class="opt"><input type="radio" name="answers" value="B"> B) {{ q["B"] }}</label>
-        <label class="opt"><input type="radio" name="answers" value="C"> C) {{ q["C"] }}</label>
-        <label class="opt"><input type="radio" name="answers" value="D"> D) {{ q["D"] }}</label>
+        {# ✅ Унікальна група радіокнопок для кожного питання: q0, q1, ... #}
+        <label class="opt"><input type="radio" name="q{{ loop.index0 }}" value="A"> A) {{ q["A"] }}</label>
+        <label class="opt"><input type="radio" name="q{{ loop.index0 }}" value="B"> B) {{ q["B"] }}</label>
+        <label class="opt"><input type="radio" name="q{{ loop.index0 }}" value="C"> C) {{ q["C"] }}</label>
+        <label class="opt"><input type="radio" name="q{{ loop.index0 }}" value="D"> D) {{ q["D"] }}</label>
       </div>
       {% endfor %}
 
@@ -66,3 +67,7 @@
 </script>
 </body>
 </html>
+
+</body>
+</html>
+
