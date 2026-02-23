@@ -10,7 +10,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
-
+from starlette.concurrency import run_in_threadpool
+from google_sheets_writer import append_result_row
 
 # =========================
 # Налаштування
