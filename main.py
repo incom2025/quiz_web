@@ -4,23 +4,32 @@ import random
 import secrets
 import sqlite3
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, Any, List
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
-from starlette.concurrency import run_in_threadpool
-from google_sheets_writer import append_result_row
+
+# ✅ Google Sheets writer (файл google_sheets_writer.py має бути в репо)
+#    У ньому має бути функція upsert_score_by_lesson(...)
+from google_sheets_writer import upsert_score_by_lesson
+
 
 # =========================
 # Налаштування
 # =========================
 CSV_FILE = os.getenv("CSV_FILE", "questions.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
+
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
+
+# ✅ Google Sheets env vars
+GSHEET_ID = os.getenv("GSHEET_ID", "")            # ID таблиці (з URL)
+LESSON_ID = os.getenv("LESSON_ID", "")            # назва/дата колонки (наприклад 2026-02-23 або L01)
+GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "")  # назва аркуша, або пусто => sheet1
 
 
 # =========================
@@ -72,13 +81,12 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
 
 
 # =========================
-# Lifespan (замість on_event)
+# Lifespan (startup/shutdown)
 # =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db_init()  # startup
+    db_init()
     yield
-    # shutdown (за потреби можна додати логіку)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -88,7 +96,7 @@ SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 
 # =========================
-# Debug endpoints (щоб перевірити деплой)
+# Debug endpoints
 # =========================
 @app.get("/ping", response_class=PlainTextResponse)
 def ping():
@@ -157,10 +165,12 @@ def load_questions_from_csv(path: str) -> List[dict]:
 # =========================
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
+    # Можна показати студентам/викладачу, яке заняття зараз активне (LESSON_ID)
     return templates.TemplateResponse("index.html", {
         "request": request,
         "duration_sec": TEST_DURATION_SECONDS,
-        "questions_per_test": QUESTIONS_PER_TEST
+        "questions_per_test": QUESTIONS_PER_TEST,
+        "lesson_id": LESSON_ID,
     })
 
 
@@ -212,7 +222,6 @@ def quiz(request: Request, session_id: str):
     })
 
 
-# ✅ ВАЖЛИВО: тепер відповіді приходять як q0, q1, q2... (див. quiz.html)
 @app.post("/submit/{session_id}", response_class=HTMLResponse)
 async def submit(request: Request, session_id: str):
     sess = SESSIONS.get(session_id)
@@ -230,29 +239,38 @@ async def submit(request: Request, session_id: str):
 
     total = len(questions)
 
-    # 1) пишемо в локальну SQLite
-    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
+    # 1) SQLite зберігаємо завжди
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, total)
 
-    # 2) пишемо в Google Sheets (не блокуємо відповідь)
+    # 2) ✅ Google Sheets (1 студент = 1 рядок, 1 заняття = 1 стовпець)
+    #    Пише у стовпець з назвою LESSON_ID
+    #    Якщо студента немає — додає рядок.
     try:
-        await run_in_threadpool(
-            append_result_row,
-            sess["surname"],
-            sess["name"],
-            sess["grp"],
-            score,
-            len(questions),
-        )
+        if GSHEET_ID and LESSON_ID:
+            upsert_score_by_lesson(
+                sheet_id=GSHEET_ID,
+                lesson_id=LESSON_ID,
+                surname=sess["surname"],
+                name=sess["name"],
+                grp=sess["grp"],
+                score=score,
+                total=total,
+                worksheet_name=GSHEET_WORKSHEET or None,
+            )
+        else:
+            # Якщо не задано GSHEET_ID або LESSON_ID — просто не пишемо
+            print("Google Sheets disabled: GSHEET_ID or LESSON_ID missing")
     except Exception as e:
-        # щоб бачити причину в Render Logs
-        print("Google Sheets append failed:", repr(e))
+        # Не “валимо” тест — лише лог
+        print("Google Sheets write error:", repr(e))
 
+    # чистимо сесію
     SESSIONS.pop(session_id, None)
 
     return templates.TemplateResponse("result.html", {
         "request": request,
         "score": score,
-        "total": len(questions),
+        "total": total,
     })
 
 
