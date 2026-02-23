@@ -228,7 +228,20 @@ async def submit(request: Request, session_id: str):
         if a == q["Prav_vid"]:
             score += 1
 
-    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
+    total = len(questions)
+
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, total)
+
+    # ✅ Запис у Google Sheets (не блокує FastAPI)
+    try:
+        await run_in_threadpool(
+            append_result_row,
+            sess["surname"], sess["name"], sess["grp"], score, total
+        )
+    except Exception as e:
+        # Не ламаємо тест, якщо Google тимчасово недоступний
+        print("Google Sheets append failed:", repr(e))
+
     SESSIONS.pop(session_id, None)
 
     return templates.TemplateResponse("result.html", {
