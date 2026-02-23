@@ -230,16 +230,21 @@ async def submit(request: Request, session_id: str):
 
     total = len(questions)
 
-    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, total)
+    # 1) пишемо в локальну SQLite
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
 
-    # ✅ Запис у Google Sheets (не блокує FastAPI)
+    # 2) пишемо в Google Sheets (не блокуємо відповідь)
     try:
         await run_in_threadpool(
             append_result_row,
-            sess["surname"], sess["name"], sess["grp"], score, total
+            sess["surname"],
+            sess["name"],
+            sess["grp"],
+            score,
+            len(questions),
         )
     except Exception as e:
-        # Не ламаємо тест, якщо Google тимчасово недоступний
+        # щоб бачити причину в Render Logs
         print("Google Sheets append failed:", repr(e))
 
     SESSIONS.pop(session_id, None)
