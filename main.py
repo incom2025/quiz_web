@@ -4,32 +4,30 @@ import random
 import secrets
 import sqlite3
 from datetime import datetime
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
-
 # =========================
 # Налаштування
 # =========================
 CSV_FILE = os.getenv("CSV_FILE", "questions.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
-
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
-# Google Sheets (матриця)
-GSHEET_ID = os.getenv("GSHEET_ID")                 # напр. 1k5zx1lwacPISJ5...
-GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET")   # напр. Matrix
-LESSON_ID_ENV = os.getenv("LESSON_ID")             # напр. 2026-02-24 або "Lesson_01"
+# Google Sheets (Matrix режим)
+GSHEET_ID = os.getenv("GSHEET_ID")  # ID таблиці
+GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "Matrix")  # назва вкладки
+LESSON_ID_ENV = os.getenv("LESSON_ID")  # опційно: Lesson_01 або 2026-02-24
 
 
 # =========================
-# База даних (резерв)
+# База даних
 # =========================
 def db_init():
     with sqlite3.connect(DB_FILE) as con:
@@ -37,7 +35,6 @@ def db_init():
             CREATE TABLE IF NOT EXISTS results(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ts TEXT NOT NULL,
-                lesson_id TEXT NOT NULL,
                 surname TEXT NOT NULL,
                 name TEXT NOT NULL,
                 grp TEXT NOT NULL,
@@ -48,11 +45,11 @@ def db_init():
         con.commit()
 
 
-def db_insert_result(lesson_id: str, surname: str, name: str, grp: str, score: int, total: int):
+def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
     with sqlite3.connect(DB_FILE) as con:
         con.execute(
-            "INSERT INTO results(ts, lesson_id, surname, name, grp, score, total) VALUES(?,?,?,?,?,?,?)",
-            (datetime.now().isoformat(timespec="seconds"), lesson_id, surname, name, grp, score, total),
+            "INSERT INTO results(ts, surname, name, grp, score, total) VALUES(?,?,?,?,?,?)",
+            (datetime.now().isoformat(timespec="seconds"), surname, name, grp, score, total),
         )
         con.commit()
 
@@ -63,11 +60,11 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     wb = Workbook()
     ws = wb.active
     ws.title = "Results"
-    ws.append(["Timestamp", "Lesson", "Прізвище", "Ім'я", "Група", "Бали", "Всього"])
+    ws.append(["Timestamp", "Прізвище", "Ім'я", "Група", "Бали", "Всього"])
 
     with sqlite3.connect(DB_FILE) as con:
         rows = con.execute(
-            "SELECT ts, lesson_id, surname, name, grp, score, total FROM results ORDER BY id DESC"
+            "SELECT ts, surname, name, grp, score, total FROM results ORDER BY id DESC"
         ).fetchall()
 
     for r in rows:
@@ -78,11 +75,54 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
 
 
 # =========================
-# Lifespan
+# Google Sheets: Matrix write
+# =========================
+def _get_lesson_id() -> str:
+    # якщо LESSON_ID не заданий — використовуємо поточну дату
+    return (LESSON_ID_ENV or datetime.now().strftime("%Y-%m-%d")).strip()
+
+
+def write_to_google_matrix(surname: str, name: str, grp: str, score: int, total: int):
+    """
+    Пише у вкладку Matrix:
+    - 1 рядок = 1 студент (Surname/Name/Group)
+    - 1 стовпець = 1 урок (lesson_id)
+    """
+    # якщо не налаштовані змінні — просто пропускаємо
+    if not GSHEET_ID:
+        print("Google Sheets disabled: GSHEET_ID missing")
+        return
+
+    lesson_id = _get_lesson_id()
+    if not lesson_id:
+        print("Google Sheets disabled: LESSON_ID missing/empty")
+        return
+
+    try:
+        from google_sheets_writer import upsert_score_by_lesson
+
+        upsert_score_by_lesson(
+            sheet_id=GSHEET_ID,
+            lesson_id=lesson_id,
+            surname=surname,
+            name=name,
+            grp=grp,
+            score=score,
+            total=total,
+            worksheet_name=GSHEET_WORKSHEET,  # <-- ВАЖЛИВО: Matrix
+        )
+        print(f"Google Sheets updated: worksheet={GSHEET_WORKSHEET}, lesson_id={lesson_id}, {surname} {name} {grp} -> {score}/{total}")
+    except Exception as e:
+        # не ламаємо тест, лише лог
+        print(f"Google Sheets write error: {type(e).__name__}: {e}")
+
+
+# =========================
+# Lifespan (замість on_event)
 # =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db_init()
+    db_init()  # startup
     yield
 
 
@@ -113,8 +153,18 @@ def routes():
     return out
 
 
+@app.get("/debug/sheets")
+def debug_sheets():
+    return {
+        "GSHEET_ID_set": bool(GSHEET_ID),
+        "GSHEET_WORKSHEET": GSHEET_WORKSHEET,
+        "LESSON_ID_env": LESSON_ID_ENV,
+        "LESSON_ID_effective": _get_lesson_id(),
+    }
+
+
 # =========================
-# Питання
+# Робота з питаннями
 # =========================
 def load_questions_from_csv(path: str) -> List[dict]:
     if not os.path.exists(path):
@@ -157,74 +207,23 @@ def load_questions_from_csv(path: str) -> List[dict]:
         return questions
 
 
-def _lesson_id_default() -> str:
-    # Якщо ви не передали lesson_id — робимо його як поточну дату
-    return datetime.now().strftime("%Y-%m-%d")
-
-
-def _safe_log(msg: str):
-    # Render logs читає stdout
-    print(msg, flush=True)
-
-
-def write_to_google_matrix(
-    lesson_id: str,
-    surname: str,
-    name: str,
-    grp: str,
-    score: int,
-    total: int,
-):
-    """
-    Пише у Google Sheet: 1 студент = 1 рядок, lesson_id = новий стовпець.
-    """
-    if not GSHEET_ID:
-        _safe_log("GSHEET_ID is missing -> skip Google write")
-        return
-
-    try:
-        from google_sheets_writer import upsert_score_by_lesson
-
-        upsert_score_by_lesson(
-            sheet_id=GSHEET_ID,
-            lesson_id=lesson_id,
-            surname=surname,
-            name=name,
-            grp=grp,
-            score=score,
-            total=total,
-            worksheet_name=GSHEET_WORKSHEET,  # напр. "Matrix"
-        )
-        _safe_log(f"Google write OK: {surname} {name} {grp} lesson={lesson_id} score={score}/{total}")
-
-    except Exception as e:
-        # Важливо: не валимо тест студенту через Sheets
-        _safe_log(f"Google write FAILED: {type(e).__name__}: {e}")
-
-
 # =========================
 # Маршрути
 # =========================
 @app.get("/", response_class=HTMLResponse)
-def index(request: Request, lesson: Optional[str] = None):
-    # lesson можна задавати так: https://.../?lesson=2026-02-24
-    lesson_id = (lesson or LESSON_ID_ENV or _lesson_id_default()).strip()
-
+def index(request: Request):
     return templates.TemplateResponse("index.html", {
         "request": request,
         "duration_sec": TEST_DURATION_SECONDS,
-        "questions_per_test": QUESTIONS_PER_TEST,
-        "lesson_id": lesson_id,  # якщо в шаблоні захочете показати/передати hidden input
+        "questions_per_test": QUESTIONS_PER_TEST
     })
 
 
 @app.post("/start")
 def start(
-    request: Request,
     surname: str = Form(...),
     name: str = Form(...),
     grp: str = Form(...),
-    lesson_id: Optional[str] = Form(None),  # якщо додасте поле в index.html (або hidden)
 ):
     surname = surname.strip()
     name = name.strip()
@@ -232,14 +231,6 @@ def start(
 
     if not surname or not name or not grp:
         return RedirectResponse("/", status_code=303)
-
-    # lesson_id: форма -> env -> today
-    if lesson_id:
-        lid = lesson_id.strip()
-    else:
-        # можна ще читати з query: /start?lesson=...
-        q_lesson = request.query_params.get("lesson")
-        lid = (q_lesson or LESSON_ID_ENV or _lesson_id_default()).strip()
 
     all_q = load_questions_from_csv(CSV_FILE)
     picked = random.sample(all_q, QUESTIONS_PER_TEST)
@@ -249,7 +240,6 @@ def start(
         "surname": surname,
         "name": name,
         "grp": grp,
-        "lesson_id": lid,
         "questions": picked,
         "started": datetime.now().timestamp(),
     }
@@ -274,7 +264,6 @@ def quiz(request: Request, session_id: str):
         "grp": sess["grp"],
         "questions": sess["questions"],
         "remaining": remaining,
-        "lesson_id": sess.get("lesson_id"),
     })
 
 
@@ -293,15 +282,13 @@ async def submit(request: Request, session_id: str):
         if a == q["Prav_vid"]:
             score += 1
 
-    lesson_id = (sess.get("lesson_id") or LESSON_ID_ENV or _lesson_id_default()).strip()
     total = len(questions)
 
-    # 1) пишемо в SQLite (резерв)
-    db_insert_result(lesson_id, sess["surname"], sess["name"], sess["grp"], score, total)
+    # 1) локальна БД
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, total)
 
-    # 2) пишемо в Google Sheets (матриця)
+    # 2) Google Sheets Matrix
     write_to_google_matrix(
-        lesson_id=lesson_id,
         surname=sess["surname"],
         name=sess["name"],
         grp=sess["grp"],
