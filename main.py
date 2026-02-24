@@ -4,12 +4,16 @@ import random
 import secrets
 import sqlite3
 from datetime import datetime
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
+
+# Google Sheets writer (ваш файл поруч)
+from google_sheets_writer import upsert_score_by_lesson
+
 
 # =========================
 # Налаштування
@@ -20,10 +24,10 @@ TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
-# Google Sheets (Matrix режим)
-GSHEET_ID = os.getenv("GSHEET_ID")  # ID таблиці
-GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "Matrix")  # назва вкладки
-LESSON_ID_ENV = os.getenv("LESSON_ID")  # опційно: Lesson_01 або 2026-02-24
+# Google Sheets env
+GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
+GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "").strip()  # напр. "Matrix"
+LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()  # optional
 
 
 # =========================
@@ -42,6 +46,13 @@ def db_init():
                 total INTEGER NOT NULL
             )
         """)
+        # settings: зберігаємо lesson_id (та інші налаштування)
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS settings(
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """)
         con.commit()
 
 
@@ -51,6 +62,28 @@ def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
             "INSERT INTO results(ts, surname, name, grp, score, total) VALUES(?,?,?,?,?,?)",
             (datetime.now().isoformat(timespec="seconds"), surname, name, grp, score, total),
         )
+        con.commit()
+
+
+def db_set_setting(key: str, value: str):
+    with sqlite3.connect(DB_FILE) as con:
+        con.execute(
+            "INSERT INTO settings(key, value) VALUES(?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            (key, value),
+        )
+        con.commit()
+
+
+def db_get_setting(key: str) -> Optional[str]:
+    with sqlite3.connect(DB_FILE) as con:
+        row = con.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+        return row[0] if row else None
+
+
+def db_delete_setting(key: str):
+    with sqlite3.connect(DB_FILE) as con:
+        con.execute("DELETE FROM settings WHERE key = ?", (key,))
         con.commit()
 
 
@@ -75,54 +108,11 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
 
 
 # =========================
-# Google Sheets: Matrix write
-# =========================
-def _get_lesson_id() -> str:
-    # якщо LESSON_ID не заданий — використовуємо поточну дату
-    return (LESSON_ID_ENV or datetime.now().strftime("%Y-%m-%d")).strip()
-
-
-def write_to_google_matrix(surname: str, name: str, grp: str, score: int, total: int):
-    """
-    Пише у вкладку Matrix:
-    - 1 рядок = 1 студент (Surname/Name/Group)
-    - 1 стовпець = 1 урок (lesson_id)
-    """
-    # якщо не налаштовані змінні — просто пропускаємо
-    if not GSHEET_ID:
-        print("Google Sheets disabled: GSHEET_ID missing")
-        return
-
-    lesson_id = _get_lesson_id()
-    if not lesson_id:
-        print("Google Sheets disabled: LESSON_ID missing/empty")
-        return
-
-    try:
-        from google_sheets_writer import upsert_score_by_lesson
-
-        upsert_score_by_lesson(
-            sheet_id=GSHEET_ID,
-            lesson_id=lesson_id,
-            surname=surname,
-            name=name,
-            grp=grp,
-            score=score,
-            total=total,
-            worksheet_name=GSHEET_WORKSHEET,  # <-- ВАЖЛИВО: Matrix
-        )
-        print(f"Google Sheets updated: worksheet={GSHEET_WORKSHEET}, lesson_id={lesson_id}, {surname} {name} {grp} -> {score}/{total}")
-    except Exception as e:
-        # не ламаємо тест, лише лог
-        print(f"Google Sheets write error: {type(e).__name__}: {e}")
-
-
-# =========================
-# Lifespan (замість on_event)
+# Lifespan (startup/shutdown)
 # =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db_init()  # startup
+    db_init()
     yield
 
 
@@ -130,6 +120,32 @@ app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 SESSIONS: Dict[str, Dict[str, Any]] = {}
+
+
+# =========================
+# Допоміжне
+# =========================
+def _get_lesson_id() -> str:
+    # 1) lesson_id, який виставили через /admin/set_lesson (в SQLite)
+    db_val = db_get_setting("lesson_id")
+    if db_val and db_val.strip():
+        return db_val.strip()
+
+    # 2) optional env LESSON_ID
+    if LESSON_ID_ENV:
+        return LESSON_ID_ENV
+
+    # 3) fallback: сьогоднішня дата
+    return datetime.now().strftime("%Y-%m-%d")
+
+
+def _sheets_enabled() -> bool:
+    return bool(GSHEET_ID and GSHEET_WORKSHEET)
+
+
+def _admin_check(key: str):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
 
 # =========================
@@ -151,16 +167,6 @@ def routes():
             "name": getattr(r, "name", "")
         })
     return out
-
-
-@app.get("/debug/sheets")
-def debug_sheets():
-    return {
-        "GSHEET_ID_set": bool(GSHEET_ID),
-        "GSHEET_WORKSHEET": GSHEET_WORKSHEET,
-        "LESSON_ID_env": LESSON_ID_ENV,
-        "LESSON_ID_effective": _get_lesson_id(),
-    }
 
 
 # =========================
@@ -282,33 +288,90 @@ async def submit(request: Request, session_id: str):
         if a == q["Prav_vid"]:
             score += 1
 
-    total = len(questions)
+    # 1) SQLite (локально на Render)
+    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
 
-    # 1) локальна БД
-    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, total)
-
-    # 2) Google Sheets Matrix
-    write_to_google_matrix(
-        surname=sess["surname"],
-        name=sess["name"],
-        grp=sess["grp"],
-        score=score,
-        total=total,
-    )
+    # 2) Google Sheets Matrix (75 рядків, кожний урок = колонка)
+    if _sheets_enabled():
+        try:
+            lesson_id = _get_lesson_id()
+            upsert_score_by_lesson(
+                sheet_id=GSHEET_ID,
+                lesson_id=lesson_id,
+                surname=sess["surname"],
+                name=sess["name"],
+                grp=sess["grp"],
+                score=score,
+                total=len(questions),
+                worksheet_name=GSHEET_WORKSHEET,
+            )
+        except Exception as e:
+            # не валимо тест студенту, просто лог в консоль Render
+            print(f"[Sheets] write failed: {type(e).__name__}: {e}")
+    else:
+        print("[Sheets] disabled: GSHEET_ID or GSHEET_WORKSHEET missing")
 
     SESSIONS.pop(session_id, None)
 
     return templates.TemplateResponse("result.html", {
         "request": request,
         "score": score,
-        "total": total,
+        "total": len(questions),
     })
+
+
+# =========================
+# Admin endpoints
+# =========================
+@app.get("/admin/set_lesson")
+def admin_set_lesson(
+    key: str = Query(...),
+    lesson: str = Query(...),
+):
+    _admin_check(key)
+
+    lesson = lesson.strip()
+    if not lesson:
+        raise HTTPException(status_code=400, detail="lesson is empty")
+
+    db_set_setting("lesson_id", lesson)
+    return {"ok": True, "lesson_id": lesson}
+
+
+@app.get("/admin/set_lesson_today")
+def admin_set_lesson_today(key: str = Query(...)):
+    _admin_check(key)
+
+    lesson = datetime.now().strftime("%Y-%m-%d")
+    db_set_setting("lesson_id", lesson)
+    return {"ok": True, "lesson_id": lesson}
+
+
+@app.get("/admin/get_lesson")
+def admin_get_lesson(key: str = Query(...)):
+    _admin_check(key)
+
+    return {
+        "lesson_id_db": db_get_setting("lesson_id"),
+        "lesson_id_env": LESSON_ID_ENV,
+        "lesson_id_effective": _get_lesson_id(),
+        "worksheet": GSHEET_WORKSHEET,
+        "gsheet_id_set": bool(GSHEET_ID),
+        "sheets_enabled": _sheets_enabled(),
+    }
+
+
+@app.get("/admin/clear_lesson")
+def admin_clear_lesson(key: str = Query(...)):
+    _admin_check(key)
+
+    db_delete_setting("lesson_id")
+    return {"ok": True, "lesson_id_db": None}
 
 
 @app.get("/admin/export")
 def admin_export(key: str = Query(...)):
-    if key != ADMIN_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    _admin_check(key)
 
     path = export_results_to_xlsx("results.xlsx")
     return FileResponse(path, filename="results.xlsx")
