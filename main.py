@@ -18,7 +18,7 @@ from google_sheets_writer import upsert_score_by_lesson
 # =========================
 # Налаштування
 # =========================
-CSV_FILE = os.getenv("CSV_FILE", "questions_lecture2_50_quizweb_letters.csv")
+CSV_FILE = os.getenv("CSV_FILE", "questions.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
