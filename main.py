@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
+import pytz
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
@@ -120,6 +121,43 @@ app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 SESSIONS: Dict[str, Dict[str, Any]] = {}
+
+
+# =========================
+# Доступ за часом (кожний четвер 16:15–16:30, Europe/Kyiv)
+# =========================
+def is_test_time() -> bool:
+    tz = pytz.timezone("Europe/Kyiv")
+    now = datetime.now(tz)
+
+    # 3 = четвер (понеділок = 0)
+    if now.weekday() != 3:
+        return False
+
+    current_minutes = now.hour * 60 + now.minute
+    start_minutes = 16 * 60 + 15   # 16:15
+    end_minutes = 16 * 60 + 30     # 16:30
+
+    return start_minutes <= current_minutes <= end_minutes
+
+
+@app.middleware("http")
+async def restrict_time(request: Request, call_next):
+    # Завжди дозволяємо технічні та адмін-ендпоінти
+    if request.url.path == "/ping" or request.url.path == "/routes" or request.url.path.startswith("/admin"):
+        return await call_next(request)
+
+    # Блокуємо все інше поза вікном часу
+    if not is_test_time():
+        return HTMLResponse(
+            """
+            <h2>Тест зараз недоступний</h2>
+            <p>Доступ відкривається кожного четверга з 16:15 до 16:30 (за київським часом).</p>
+            """,
+            status_code=403,
+        )
+
+    return await call_next(request)
 
 
 # =========================
@@ -375,5 +413,6 @@ def admin_export(key: str = Query(...)):
 
     path = export_results_to_xlsx("results.xlsx")
     return FileResponse(path, filename="results.xlsx")
+
 
 
