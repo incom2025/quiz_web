@@ -1,0 +1,42 @@
+Question,A,B,C,D,Prav_vid
+Що таке візуалізація даних?,Процес графічного представлення даних,Метод зберігання даних,Алгоритм машинного навчання,Тип бази даних,A
+Яка бібліотека Python є базовою для побудови графіків?,Matplotlib,TensorFlow,NumPy,Scikit-learn,A
+Яка функція Matplotlib відображає графік?,plt.show(),plt.start(),plt.display(),plt.draw(),A
+Яка функція будує лінійний графік у Matplotlib?,plt.plot(),plt.scatter(),plt.bar(),plt.hist(),A
+Яка функція додає заголовок до графіка?,plt.title(),plt.header(),plt.label(),plt.caption(),A
+Яка функція додає підпис осі X?,plt.xlabel(),plt.ylabel(),plt.axisx(),plt.xname(),A
+Яка функція додає підпис осі Y?,plt.ylabel(),plt.xlabel(),plt.axisy(),plt.yname(),A
+Яка функція додає координатну сітку?,plt.grid(),plt.net(),plt.mesh(),plt.lines(),A
+Яка бібліотека використовується для статистичної візуалізації?,Seaborn,TensorFlow,Pandas,NumPy,A
+Яка функція Seaborn будує boxplot?,sns.boxplot(),sns.histplot(),sns.scatterplot(),sns.lineplot(),A
+Що показує boxplot?,Медіану та викиди,Тільки середнє,Тільки мінімум,Тільки максимум,A
+Яка функція будує гістограму у Matplotlib?,plt.hist(),plt.plot(),plt.scatter(),plt.bar(),A
+Що показує гістограма?,Розподіл даних,Суму значень,Мінімальні значення,Сортування даних,A
+Яка функція створює scatter plot?,plt.scatter(),plt.plot(),plt.bar(),plt.hist(),A
+Для чого використовується scatter plot?,Аналіз зв'язку між змінними,Підрахунок значень,Сортування даних,Кодування ознак,A
+Яка функція Seaborn рахує кількість категорій?,sns.countplot(),sns.histplot(),sns.violinplot(),sns.boxplot(),A
+Що показує countplot?,Кількість елементів у категорії,Середнє значення,Максимум,Мінімум,A
+Яка функція будує violin plot?,sns.violinplot(),sns.boxplot(),sns.barplot(),sns.lineplot(),A
+Що показує violin plot?,Щільність розподілу,Тільки середнє,Тільки максимум,Тільки кількість,A
+Яка функція Seaborn будує графік регресії?,sns.lmplot(),sns.histplot(),sns.boxplot(),sns.countplot(),A
+Що показує lmplot?,Залежність між змінними та лінію регресії,Сортування даних,Кластеризацію,Фільтрацію,A
+Яка функція створює кілька графіків одночасно?,plt.subplots(),plt.multiplot(),plt.grid(),plt.figure(),A
+Що повертає функція plt.subplots()?,fig та axes,Тільки fig,Тільки axes,Список даних,A
+Що таке axes у matplotlib?,Область побудови графіка,Тип даних,Файл графіка,Стиль графіка,A
+Що означає figsize?,Розмір графіка,Колір графіка,Кількість точок,Тип графіка,A
+Яка функція будує heatmap?,sns.heatmap(),sns.histplot(),sns.countplot(),sns.barplot(),A
+Що показує heatmap?,Кореляцію між змінними,Середнє значення,Мінімум,Максимум,A
+Що таке EDA?,Exploratory Data Analysis,Error Data Algorithm,External Data Access,Extra Data Analysis,A
+Яка функція pandas перевіряє пропуски?,df.isna().sum(),df.sum(),df.mean(),df.sort(),A
+Що робить df.describe()?,Показує статистику даних,Сортує дані,Видаляє пропуски,Кодує дані,A
+Що таке pairplot?,Попарний аналіз змінних,Сортування даних,Кодування змінних,Нормалізація,A
+Яка бібліотека використовується для інтерактивних графіків?,Plotly,Matplotlib,NumPy,Pandas,A
+Яка функція Plotly будує scatter plot?,px.scatter(),px.line(),px.bar(),px.box(),A
+Що означає hover у Plotly?,Підказки при наведенні курсора,Колір графіка,Тип графіка,Розмір графіка,A
+Що таке dashboard у візуалізації?,Набір кількох графіків,Тип гістограми,Алгоритм ML,Формат файлу,A
+Яка функція вирівнює графіки у dashboard?,plt.tight_layout(),plt.grid(),plt.align(),plt.fit(),A
+Що показує line plot?,Тренд у часі,Кількість категорій,Викиди,Медіану,A
+Що робить sns.histplot()?,Будує гістограму,Будує boxplot,Будує scatter plot,Будує heatmap,A
+Що означає параметр hue у Seaborn?,Розділення даних за категорією,Колір фону,Тип осі,Формат даних,A
+Що таке Visual Analytics?,Поєднання аналізу та візуалізації,Тип бази даних,Алгоритм ML,Тип файлу,A
+Яка головна мета Visual Analytics?,Виявлення закономірностей,Збереження файлів,Кодування змінних,Компресія даних,A
