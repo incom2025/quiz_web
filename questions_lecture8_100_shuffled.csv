@@ -1,0 +1,101 @@
+Question,A,B,C,D,Prav_vid
+Що означає CSV?,Computer Storage Version,Column Saved Values,Comma Separated Values,Central System Variables,C
+Яка бібліотека Python використовується для роботи з таблицями?,bs4,pandas,numpy,requests,B
+Яка функція pandas читає CSV файл?,read_json(),read_csv(),load_csv(),read_excel(),B
+Який параметр задає роздільник у read_csv?,dtype,sep,index,encoding,B
+"Що означає encoding=""utf-8""?",тип таблиці,тип даних,тип файлу,кодування тексту,D
+Яка функція зберігає DataFrame у CSV?,save(),to_json(),to_csv(),to_excel(),C
+Що означає index=False у to_csv?,змінити тип,видалити рядки,не зберігати індекс,видалити файл,C
+Який формат файлів використовує Excel?,.csv,.txt,.xlsx,.json,C
+Яка функція читає Excel у pandas?,read_excel(),load_excel(),read_csv(),open_excel(),A
+Який параметр read_excel вибирає лист?,tab,page,sheet_name,sheet,C
+Що означає JSON?,Java Script Order Notation,Java Object Script Node,Joint System Object Network,JavaScript Object Notation,D
+Яка функція pandas читає JSON?,read_csv(),json_read(),read_json(),read_sql(),C
+Яка бібліотека використовується для HTTP‑запитів?,pandas,requests,numpy,sqlite3,B
+Який метод requests отримує дані?,get(),load(),post(),read(),A
+Що повертає response.json()?,SQL,Python‑об’єкт,HTML,XML,B
+Яка структура даних часто приходить з API?,CSV,TXT,Excel,JSON,D
+Яка бібліотека використовується для web scraping?,Scikit‑learn,NumPy,TensorFlow,BeautifulSoup,D
+Який метод BeautifulSoup знаходить всі теги?,find(),scan(),search(),find_all(),D
+Що повертає tag.text?,таблицю,HTML код,текст тега,URL,C
+Яка бібліотека використовується для роботи з SQLite?,numpy,matplotlib,sqlite3,requests,C
+Що означає CSV? (варіант 21),Computer Storage Version,Column Saved Values,Comma Separated Values,Central System Variables,C
+Яка бібліотека Python використовується для роботи з таблицями? (варіант 22),numpy,requests,bs4,pandas,D
+Яка функція pandas читає CSV файл? (варіант 23),read_json(),read_csv(),read_excel(),load_csv(),B
+Який параметр задає роздільник у read_csv? (варіант 24),encoding,dtype,sep,index,C
+"Що означає encoding=""utf-8""? (варіант 25)",тип таблиці,кодування тексту,тип файлу,тип даних,B
+Яка функція зберігає DataFrame у CSV? (варіант 26),to_excel(),save(),to_json(),to_csv(),D
+Що означає index=False у to_csv? (варіант 27),видалити файл,видалити рядки,не зберігати індекс,змінити тип,C
+Який формат файлів використовує Excel? (варіант 28),.xlsx,.json,.txt,.csv,A
+Яка функція читає Excel у pandas? (варіант 29),read_excel(),load_excel(),open_excel(),read_csv(),A
+Який параметр read_excel вибирає лист? (варіант 30),sheet,page,tab,sheet_name,D
+Що означає JSON? (варіант 31),Joint System Object Network,Java Script Order Notation,JavaScript Object Notation,Java Object Script Node,C
+Яка функція pandas читає JSON? (варіант 32),json_read(),read_csv(),read_json(),read_sql(),C
+Яка бібліотека використовується для HTTP‑запитів? (варіант 33),requests,sqlite3,pandas,numpy,A
+Який метод requests отримує дані? (варіант 34),post(),load(),read(),get(),D
+Що повертає response.json()? (варіант 35),HTML,XML,SQL,Python‑об’єкт,D
+Яка структура даних часто приходить з API? (варіант 36),Excel,JSON,TXT,CSV,B
+Яка бібліотека використовується для web scraping? (варіант 37),Scikit‑learn,BeautifulSoup,TensorFlow,NumPy,B
+Який метод BeautifulSoup знаходить всі теги? (варіант 38),scan(),search(),find_all(),find(),C
+Що повертає tag.text? (варіант 39),текст тега,HTML код,URL,таблицю,A
+Яка бібліотека використовується для роботи з SQLite? (варіант 40),matplotlib,requests,sqlite3,numpy,C
+Що означає CSV? (варіант 41),Column Saved Values,Comma Separated Values,Computer Storage Version,Central System Variables,B
+Яка бібліотека Python використовується для роботи з таблицями? (варіант 42),bs4,requests,pandas,numpy,C
+Яка функція pandas читає CSV файл? (варіант 43),read_csv(),read_excel(),load_csv(),read_json(),A
+Який параметр задає роздільник у read_csv? (варіант 44),encoding,index,sep,dtype,C
+"Що означає encoding=""utf-8""? (варіант 45)",тип даних,тип таблиці,кодування тексту,тип файлу,C
+Яка функція зберігає DataFrame у CSV? (варіант 46),to_csv(),to_excel(),save(),to_json(),A
+Що означає index=False у to_csv? (варіант 47),змінити тип,видалити рядки,не зберігати індекс,видалити файл,C
+Який формат файлів використовує Excel? (варіант 48),.csv,.json,.xlsx,.txt,C
+Яка функція читає Excel у pandas? (варіант 49),load_excel(),read_csv(),open_excel(),read_excel(),D
+Який параметр read_excel вибирає лист? (варіант 50),tab,page,sheet_name,sheet,C
+Що означає JSON? (варіант 51),Joint System Object Network,JavaScript Object Notation,Java Script Order Notation,Java Object Script Node,B
+Яка функція pandas читає JSON? (варіант 52),json_read(),read_csv(),read_json(),read_sql(),C
+Яка бібліотека використовується для HTTP‑запитів? (варіант 53),sqlite3,numpy,pandas,requests,D
+Який метод requests отримує дані? (варіант 54),get(),load(),read(),post(),A
+Що повертає response.json()? (варіант 55),XML,Python‑об’єкт,HTML,SQL,B
+Яка структура даних часто приходить з API? (варіант 56),TXT,JSON,Excel,CSV,B
+Яка бібліотека використовується для web scraping? (варіант 57),Scikit‑learn,NumPy,TensorFlow,BeautifulSoup,D
+Який метод BeautifulSoup знаходить всі теги? (варіант 58),search(),find_all(),find(),scan(),B
+Що повертає tag.text? (варіант 59),HTML код,текст тега,URL,таблицю,B
+Яка бібліотека використовується для роботи з SQLite? (варіант 60),matplotlib,sqlite3,requests,numpy,B
+Що означає CSV? (варіант 61),Column Saved Values,Central System Variables,Comma Separated Values,Computer Storage Version,C
+Яка бібліотека Python використовується для роботи з таблицями? (варіант 62),pandas,numpy,requests,bs4,A
+Яка функція pandas читає CSV файл? (варіант 63),read_excel(),read_json(),load_csv(),read_csv(),D
+Який параметр задає роздільник у read_csv? (варіант 64),sep,dtype,index,encoding,A
+"Що означає encoding=""utf-8""? (варіант 65)",тип даних,тип файлу,тип таблиці,кодування тексту,D
+Яка функція зберігає DataFrame у CSV? (варіант 66),to_excel(),to_csv(),save(),to_json(),B
+Що означає index=False у to_csv? (варіант 67),змінити тип,видалити файл,не зберігати індекс,видалити рядки,C
+Який формат файлів використовує Excel? (варіант 68),.txt,.csv,.json,.xlsx,D
+Яка функція читає Excel у pandas? (варіант 69),load_excel(),read_csv(),read_excel(),open_excel(),C
+Який параметр read_excel вибирає лист? (варіант 70),tab,page,sheet_name,sheet,C
+Що означає JSON? (варіант 71),Java Object Script Node,JavaScript Object Notation,Joint System Object Network,Java Script Order Notation,B
+Яка функція pandas читає JSON? (варіант 72),read_csv(),json_read(),read_json(),read_sql(),C
+Яка бібліотека використовується для HTTP‑запитів? (варіант 73),numpy,pandas,requests,sqlite3,C
+Який метод requests отримує дані? (варіант 74),post(),get(),load(),read(),B
+Що повертає response.json()? (варіант 75),Python‑об’єкт,HTML,XML,SQL,A
+Яка структура даних часто приходить з API? (варіант 76),JSON,CSV,Excel,TXT,A
+Яка бібліотека використовується для web scraping? (варіант 77),NumPy,BeautifulSoup,TensorFlow,Scikit‑learn,B
+Який метод BeautifulSoup знаходить всі теги? (варіант 78),search(),find_all(),find(),scan(),B
+Що повертає tag.text? (варіант 79),текст тега,URL,HTML код,таблицю,A
+Яка бібліотека використовується для роботи з SQLite? (варіант 80),sqlite3,matplotlib,requests,numpy,A
+Що означає CSV? (варіант 81),Computer Storage Version,Comma Separated Values,Central System Variables,Column Saved Values,B
+Яка бібліотека Python використовується для роботи з таблицями? (варіант 82),requests,numpy,pandas,bs4,C
+Яка функція pandas читає CSV файл? (варіант 83),read_excel(),read_csv(),load_csv(),read_json(),B
+Який параметр задає роздільник у read_csv? (варіант 84),index,encoding,sep,dtype,C
+"Що означає encoding=""utf-8""? (варіант 85)",тип даних,тип файлу,тип таблиці,кодування тексту,D
+Яка функція зберігає DataFrame у CSV? (варіант 86),to_json(),save(),to_excel(),to_csv(),D
+Що означає index=False у to_csv? (варіант 87),не зберігати індекс,видалити файл,змінити тип,видалити рядки,A
+Який формат файлів використовує Excel? (варіант 88),.json,.xlsx,.txt,.csv,B
+Яка функція читає Excel у pandas? (варіант 89),read_csv(),load_excel(),read_excel(),open_excel(),C
+Який параметр read_excel вибирає лист? (варіант 90),sheet,sheet_name,page,tab,B
+Що означає JSON? (варіант 91),Joint System Object Network,Java Script Order Notation,Java Object Script Node,JavaScript Object Notation,D
+Яка функція pandas читає JSON? (варіант 92),read_csv(),read_sql(),json_read(),read_json(),D
+Яка бібліотека використовується для HTTP‑запитів? (варіант 93),numpy,requests,pandas,sqlite3,B
+Який метод requests отримує дані? (варіант 94),get(),load(),post(),read(),A
+Що повертає response.json()? (варіант 95),Python‑об’єкт,SQL,XML,HTML,A
+Яка структура даних часто приходить з API? (варіант 96),JSON,CSV,TXT,Excel,A
+Яка бібліотека використовується для web scraping? (варіант 97),NumPy,BeautifulSoup,Scikit‑learn,TensorFlow,B
+Який метод BeautifulSoup знаходить всі теги? (варіант 98),find_all(),find(),scan(),search(),A
+Що повертає tag.text? (варіант 99),таблицю,URL,текст тега,HTML код,C
+Яка бібліотека використовується для роботи з SQLite? (варіант 100),requests,numpy,matplotlib,sqlite3,D
