@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що означає Big Data?,"Дані, які неможливо ефективно обробляти традиційними інструментами",Маленькі таблиці Excel,Лише SQL бази,Тільки графіки,A
+Скільки V у класичній моделі Big Data?,3,4,5,7,C
+Що означає Volume?,Швидкість,Великий обсяг,Якість,Цінність,B
+Що означає Velocity?,Швидкість надходження,Тип даних,Пам’ять,Сортування,A
+Що означає Variety?,Різноманітність форматів,Обсяг RAM,Сортування,Join,A
+Що означає Veracity?,Якість даних,Швидкість CPU,Кількість колонок,Паралелізм,A
+Що означає Value?,Цінність,CSV,Merge,dtype,A
+Основна проблема Pandas при великих файлах?,MemoryError,SyntaxError,NameError,ImportError,A
+Де Pandas зберігає DataFrame?,У RAM,У GPU,У браузері,У BIOS,A
+Що часто викликає object dtype?,Високе споживання пам’яті,Швидший код,Менше RAM,Менше колонок,A
+11. Для чого використовується chunksize у Pandas?,Видалення колонок,Зміна dtype,Читання файлу частинами,Створення графіків,C
+12. Яка бібліотека є масштабованим Pandas?,Flask,Dask,Matplotlib,NumPy,B
+13. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Polars,Requests,OpenCV,Tkinter,A
+14. Що робить .compute() у Dask?,Видаляє DataFrame,Створює CSV,Закриває файл,Запускає реальні обчислення,D
+15. Що робить .collect() у Polars?,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,C
+16. Для чого використовується chunksize у Pandas?,Зміна dtype,Читання файлу частинами,Створення графіків,Видалення колонок,B
+17. Яка бібліотека є масштабованим Pandas?,Dask,Matplotlib,NumPy,Flask,A
+18. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Requests,OpenCV,Tkinter,Polars,D
+19. Що робить .compute() у Dask?,Створює CSV,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,C
+20. Що робить .collect() у Polars?,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,Видаляє null,B
+21. Для чого використовується chunksize у Pandas?,Читання файлу частинами,Створення графіків,Видалення колонок,Зміна dtype,A
+22. Яка бібліотека є масштабованим Pandas?,Matplotlib,NumPy,Flask,Dask,D
+23. Яка бібліотека має дуже високу швидкодію та написана на Rust?,OpenCV,Tkinter,Polars,Requests,C
+24. Що робить .compute() у Dask?,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,B
+25. Що робить .collect() у Polars?,Запускає виконання lazy pipeline,Створює графік,Видаляє null,Змінює dtype,A
+26. Для чого використовується chunksize у Pandas?,Створення графіків,Видалення колонок,Зміна dtype,Читання файлу частинами,D
+27. Яка бібліотека є масштабованим Pandas?,NumPy,Flask,Dask,Matplotlib,C
+28. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Tkinter,Polars,Requests,OpenCV,B
+29. Що робить .compute() у Dask?,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,Закриває файл,A
+30. Що робить .collect() у Polars?,Створює графік,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,D
+31. Для чого використовується chunksize у Pandas?,Видалення колонок,Зміна dtype,Читання файлу частинами,Створення графіків,C
+32. Яка бібліотека є масштабованим Pandas?,Flask,Dask,Matplotlib,NumPy,B
+33. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Polars,Requests,OpenCV,Tkinter,A
+34. Що робить .compute() у Dask?,Видаляє DataFrame,Створює CSV,Закриває файл,Запускає реальні обчислення,D
+35. Що робить .collect() у Polars?,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,C
+36. Для чого використовується chunksize у Pandas?,Зміна dtype,Читання файлу частинами,Створення графіків,Видалення колонок,B
+37. Яка бібліотека є масштабованим Pandas?,Dask,Matplotlib,NumPy,Flask,A
+38. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Requests,OpenCV,Tkinter,Polars,D
+39. Що робить .compute() у Dask?,Створює CSV,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,C
+40. Що робить .collect() у Polars?,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,Видаляє null,B
+41. Для чого використовується chunksize у Pandas?,Читання файлу частинами,Створення графіків,Видалення колонок,Зміна dtype,A
+42. Яка бібліотека є масштабованим Pandas?,Matplotlib,NumPy,Flask,Dask,D
+43. Яка бібліотека має дуже високу швидкодію та написана на Rust?,OpenCV,Tkinter,Polars,Requests,C
+44. Що робить .compute() у Dask?,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,B
+45. Що робить .collect() у Polars?,Запускає виконання lazy pipeline,Створює графік,Видаляє null,Змінює dtype,A
+46. Для чого використовується chunksize у Pandas?,Створення графіків,Видалення колонок,Зміна dtype,Читання файлу частинами,D
+47. Яка бібліотека є масштабованим Pandas?,NumPy,Flask,Dask,Matplotlib,C
+48. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Tkinter,Polars,Requests,OpenCV,B
+49. Що робить .compute() у Dask?,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,Закриває файл,A
+50. Що робить .collect() у Polars?,Створює графік,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,D
+51. Для чого використовується chunksize у Pandas?,Видалення колонок,Зміна dtype,Читання файлу частинами,Створення графіків,C
+52. Яка бібліотека є масштабованим Pandas?,Flask,Dask,Matplotlib,NumPy,B
+53. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Polars,Requests,OpenCV,Tkinter,A
+54. Що робить .compute() у Dask?,Видаляє DataFrame,Створює CSV,Закриває файл,Запускає реальні обчислення,D
+55. Що робить .collect() у Polars?,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,C
+56. Для чого використовується chunksize у Pandas?,Зміна dtype,Читання файлу частинами,Створення графіків,Видалення колонок,B
+57. Яка бібліотека є масштабованим Pandas?,Dask,Matplotlib,NumPy,Flask,A
+58. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Requests,OpenCV,Tkinter,Polars,D
+59. Що робить .compute() у Dask?,Створює CSV,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,C
+60. Що робить .collect() у Polars?,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,Видаляє null,B
+61. Для чого використовується chunksize у Pandas?,Читання файлу частинами,Створення графіків,Видалення колонок,Зміна dtype,A
+62. Яка бібліотека є масштабованим Pandas?,Matplotlib,NumPy,Flask,Dask,D
+63. Яка бібліотека має дуже високу швидкодію та написана на Rust?,OpenCV,Tkinter,Polars,Requests,C
+64. Що робить .compute() у Dask?,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,B
+65. Що робить .collect() у Polars?,Запускає виконання lazy pipeline,Створює графік,Видаляє null,Змінює dtype,A
+66. Для чого використовується chunksize у Pandas?,Створення графіків,Видалення колонок,Зміна dtype,Читання файлу частинами,D
+67. Яка бібліотека є масштабованим Pandas?,NumPy,Flask,Dask,Matplotlib,C
+68. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Tkinter,Polars,Requests,OpenCV,B
+69. Що робить .compute() у Dask?,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,Закриває файл,A
+70. Що робить .collect() у Polars?,Створює графік,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,D
+71. Для чого використовується chunksize у Pandas?,Видалення колонок,Зміна dtype,Читання файлу частинами,Створення графіків,C
+72. Яка бібліотека є масштабованим Pandas?,Flask,Dask,Matplotlib,NumPy,B
+73. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Polars,Requests,OpenCV,Tkinter,A
+74. Що робить .compute() у Dask?,Видаляє DataFrame,Створює CSV,Закриває файл,Запускає реальні обчислення,D
+75. Що робить .collect() у Polars?,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,C
+76. Для чого використовується chunksize у Pandas?,Зміна dtype,Читання файлу частинами,Створення графіків,Видалення колонок,B
+77. Яка бібліотека є масштабованим Pandas?,Dask,Matplotlib,NumPy,Flask,A
+78. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Requests,OpenCV,Tkinter,Polars,D
+79. Що робить .compute() у Dask?,Створює CSV,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,C
+80. Що робить .collect() у Polars?,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,Видаляє null,B
+81. Для чого використовується chunksize у Pandas?,Читання файлу частинами,Створення графіків,Видалення колонок,Зміна dtype,A
+82. Яка бібліотека є масштабованим Pandas?,Matplotlib,NumPy,Flask,Dask,D
+83. Яка бібліотека має дуже високу швидкодію та написана на Rust?,OpenCV,Tkinter,Polars,Requests,C
+84. Що робить .compute() у Dask?,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,B
+85. Що робить .collect() у Polars?,Запускає виконання lazy pipeline,Створює графік,Видаляє null,Змінює dtype,A
+86. Для чого використовується chunksize у Pandas?,Створення графіків,Видалення колонок,Зміна dtype,Читання файлу частинами,D
+87. Яка бібліотека є масштабованим Pandas?,NumPy,Flask,Dask,Matplotlib,C
+88. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Tkinter,Polars,Requests,OpenCV,B
+89. Що робить .compute() у Dask?,Запускає реальні обчислення,Видаляє DataFrame,Створює CSV,Закриває файл,A
+90. Що робить .collect() у Polars?,Створює графік,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,D
+91. Для чого використовується chunksize у Pandas?,Видалення колонок,Зміна dtype,Читання файлу частинами,Створення графіків,C
+92. Яка бібліотека є масштабованим Pandas?,Flask,Dask,Matplotlib,NumPy,B
+93. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Polars,Requests,OpenCV,Tkinter,A
+94. Що робить .compute() у Dask?,Видаляє DataFrame,Створює CSV,Закриває файл,Запускає реальні обчислення,D
+95. Що робить .collect() у Polars?,Видаляє null,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,C
+96. Для чого використовується chunksize у Pandas?,Зміна dtype,Читання файлу частинами,Створення графіків,Видалення колонок,B
+97. Яка бібліотека є масштабованим Pandas?,Dask,Matplotlib,NumPy,Flask,A
+98. Яка бібліотека має дуже високу швидкодію та написана на Rust?,Requests,OpenCV,Tkinter,Polars,D
+99. Що робить .compute() у Dask?,Створює CSV,Закриває файл,Запускає реальні обчислення,Видаляє DataFrame,C
+100. Що робить .collect() у Polars?,Змінює dtype,Запускає виконання lazy pipeline,Створює графік,Видаляє null,B
