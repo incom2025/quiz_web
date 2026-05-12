@@ -1,0 +1,104 @@
+﻿Question,A,B,C,D,Prav_vid
+Що означає reproducibility у Data Science?,Можливість повторити результати,Видалення даних,Шифрування коду,Візуалізація графіків,A
+Яка головна проблема відсутності відтворюваності?,Збільшення RAM,Недовіра до результатів,Швидший pipeline,Краща візуалізація,B
+Що є перевагою Jupyter Notebook?,Інтерактивність,Повільний запуск,Обов’язковий Git,Автоматичний деплой,A
+Що є недоліком Jupyter Notebook?,Повна автоматизація,Прихований стан,Швидший деплой,Вбудований Git,B
+Що таке out-of-order execution?,Виконання комірок не по порядку,Автоматичне логування,Видалення змінних,Компіляція Python,A
+Який файл має розширення .py?,Python-скрипт,Jupyter Notebook,CSV-файл,YAML-файл,A
+Яка перевага Python-скриптів?,Легка автоматизація,Прихований стан,Відсутність структури,Поганий деплой,A
+Що краще використовувати для EDA?,Jupyter Notebook,Cron,Git,Task Scheduler,A
+Що краще використовувати для production pipeline?,Python scripts,Excel,PowerPoint,Notebook only,A
+Для чого потрібна папка data/raw/?,Для сирих даних,Для логів,Для моделей,Для notebook,A
+Для чого потрібна папка data/processed/?,Для оброблених даних,Для Git,Для API,Для Docker,A
+Що зберігається у папці src/?,Основний код,Сирі дані,Логи,Моделі,A
+Яке призначення config.yaml?,Зберігання конфігурацій,Зберігання моделей,Візуалізація,Створення Git,A
+Для чого потрібна папка logs/?,Зберігання журналів,Зберігання даних,Зберігання notebook,Зберігання API,A
+Що містить README.md?,Опис проєкту,Навчальні дані,Docker image,Random seed,A
+Який модуль використовується для логування?,logging,numpy,yaml,random,A
+Що робить logging.info()?,Записує інформаційне повідомлення,Видаляє файл,Навчає модель,Створює Git commit,A
+Який рівень логування відповідає помилкам?,logging.error,logging.debug,logging.info,logging.warning,A
+Що робить logging.warning()?,Створює попередження,Завершує pipeline,Навчає модель,Створює CSV,A
+Що робить logging.debug()?,Пише детальну інформацію,Створює README,Зберігає модель,Очищає дані,A
+Для чого використовують try-except у pipeline?,Для обробки помилок,Для графіків,Для Git,Для YAML,A
+Що означає хардкод параметрів?,Параметри записані прямо в коді,Параметри в YAML,Параметри в JSON,Параметри в Git,A
+Що краще за хардкод?,Конфігураційний файл,Print(),Excel,Notebook,A
+Який формат часто використовують для ML-конфігурацій?,YAML,PNG,MP4,DOCX,A
+Яка бібліотека потрібна для YAML у Python?,pyyaml,opencv,tensorflow,flask,A
+Яка функція читає YAML?,yaml.safe_load(),yaml.compile(),yaml.open(),yaml.read_csv(),A
+Що є перевагою YAML?,Зручність для людини,Обов’язкові лапки,Вбудований у браузер,Шифрування,A
+Який формат є строгішим?,JSON,YAML,Markdown,CSV,A
+Яка бібліотека використовується для JSON?,json,numpy,pandas,torch,A
+Що є обов’язковим у JSON для рядків?,Подвійні лапки,Одинарні лапки,Коментарі,HTML-теги,A
+Що робить git init?,Ініціалізує репозиторій,Видаляє Git,Створює Docker,Запускає notebook,A
+Яка команда показує статус Git?,git status,git start,git show,git pull,A
+Що робить git add . ?,Додає всі файли,Видаляє репозиторій,Запускає pipeline,Створює README,A
+Що таке commit у Git?,Збережена версія проєкту,CSV-файл,Модель ML,Лог-файл,A
+Для чого потрібен .gitignore?,Ігнорувати певні файли,Створювати графіки,Навчати модель,Створювати API,A
+Який файл часто додають у .gitignore?,__pycache__/,README.md,train.py,config.yaml,A
+Чому .env не варто додавати у Git?,Може містити секретні дані,Він занадто малий,Він не підтримується,Через matplotlib,A
+Що означає reproducibility experiments?,Однакові результати при повторному запуску,Створення Git,Візуалізація,Робота з HTML,A
+Для чого фіксують seed?,Для стабільних результатів,Для швидшого GPU,Для видалення логів,Для Docker,A
+Яка функція фіксує seed у NumPy?,np.random.seed(),np.load(),np.fit(),np.commit(),A
+Яка функція фіксує seed у random?,random.seed(),random.fit(),random.yaml(),random.log(),A
+Який параметр у scikit-learn відповідає за випадковість?,random_state,learning_rate,epochs,shuffle_size,A
+Що може впливати на невеликі відхилення навіть із seed?,GPU,README,CSV,Markdown,A
+Що таке pipeline?,Послідовність автоматичних кроків,Формат JSON,Тип графіка,Git branch,A
+Який файл часто є entry point?,main.py,README.md,config.yaml,data.csv,A
+Що робить load_data()?,Завантажує дані,Зберігає модель,Комітить Git,Створює API,A
+Що робить preprocess()?,Обробляє дані,Створює Git,Видаляє Python,Компілює код,A
+Що робить train()?,Навчає модель,Видаляє дані,Створює notebook,Пише README,A
+Що робить save_model()?,Зберігає модель,Створює графік,Видаляє seed,Створює CSV,A
+Яка головна перевага автоматизації?,Один запуск для всього workflow,Більше ручної роботи,Відсутність логів,Видалення Git,A
+Для чого використовується argparse?,CLI-аргументи,Візуалізація,Git,Docker,A
+Що дозволяє Cron?,Автоматичний запуск за розкладом,Навчання моделей,Створення CSV,Видалення логів,A
+На яких системах переважно використовується Cron?,Linux/macOS,Тільки Windows,Android,iOS,A
+Який інструмент Windows аналогічний Cron?,Task Scheduler,GitHub,Docker,Jupyter,A
+Що робить schtasks?,Створює задачі у Windows,Навчає модель,Запускає Git,Створює YAML,A
+Для чого потрібен блок if __name__ == '__main__'?,Контроль запуску файлу,Створення CSV,Запуск Git,Фіксація seed,A
+Що краще використовувати для production pipeline?,main.py,Notebook,Paint,Word,A
+Що є типовою помилкою ML-проєктів?,Відсутність логів,Наявність README,Git,Config,A
+Чому print() гірший за logging?,Не зберігає історію,Працює швидше,Створює YAML,Запускає pipeline,A
+Що краще для параметрів проєкту?,config.yaml,Hardcode,print(),PowerPoint,A
+Що дозволяє git log?,Перегляд історії commit,Видалення файлів,Запуск cron,Візуалізацію,A
+Що показує git diff?,Зміни у файлах,Список моделей,Графіки,CSV-дані,A
+Що не варто запускати як production pipeline?,Jupyter Notebook,main.py,train.py,load_data.py,A
+Яка функція використовується для зчитування CSV?,pd.read_csv(),pd.save_csv(),yaml.safe_load(),git add,A
+Що робить dropna()?,Видаляє пропущені значення,Створює Git,Навчає модель,Створює лог,A
+Який модуль використовується для вимірювання часу?,time,yaml,json,git,A
+Що робить time.sleep()?,Імітує затримку,Фіксує seed,Створює commit,Видаляє модель,A
+Яка бібліотека часто використовується для збереження моделей?,joblib,pygame,tkinter,requests,A
+Що означає test_size=0.2?,20% даних для тесту,20% даних для train,2% даних,200 рядків,A
+Для чого потрібен random_state=42?,Фіксація випадковості,Швидший GPU,Більше RAM,Видалення логів,A
+Що таке EDA?,Exploratory Data Analysis,External Data API,Error Detection App,Execution Data Access,A
+Що краще використовувати для графіків?,Jupyter Notebook,Cron,Git,Task Scheduler,A
+Що дозволяє logging.error()?,Логувати помилки,Створювати модель,Видаляти Git,Компілювати код,A
+Що таке entry point?,Точка входу програми,CSV-файл,Git branch,Random seed,A
+Що краще винести у config?,Шляхи та параметри,Функції Python,README,Jupyter cells,A
+Яка команда запускає Python-скрипт?,python main.py,git status,yaml run,cron start,A
+Що таке logs/pipeline.log?,Файл журналу,CSV-файл,Модель,Notebook,A
+Який файл зазвичай містить опис проєкту?,README.md,train.py,data.csv,main.py,A
+Що таке .ipynb?,Файл Jupyter Notebook,JSON-конфіг,Git branch,ML-модель,A
+Що таке .pkl?,Файл моделі,CSV-файл,YAML,Notebook,A
+"Що робить os.makedirs(..., exist_ok=True)?",Створює папку,Фіксує seed,Навчає модель,Видаляє Git,A
+Яка проблема абсолютних шляхів?,Код працює лише на одному ПК,Краща автоматизація,Швидший pipeline,Менше логів,A
+Який модуль допомагає працювати зі шляхами?,pathlib,tkinter,flask,pygame,A
+Що означає shuffle у train_test_split?,Перемішування даних,Видалення даних,Збереження моделі,Логування,A
+Яка структура рекомендована для ML-проєкту?,data/src/config/logs,Лише notebook,Один train.py,Лише CSV,A
+Що таке production?,Реальне використання коду,Notebook,Графік,CSV,A
+Що таке deployment?,Розгортання застосунку,Видалення seed,Git commit,EDA,A
+Який рівень logging найкритичніший?,critical,info,debug,warning,A
+Що краще для командної роботи?,Git,Print(),Notebook only,Excel,A
+Що означає deterministic у PyTorch?,Детерміновані результати,Видалення GPU,Автоматичний Git,Візуалізація,A
+Що таке cron.log?,Лог автоматичного запуску,CSV-файл,ML-модель,Notebook,A
+Що означає Pipeline finished successfully?,Pipeline завершився успішно,Сталася помилка,Git commit,Видалено дані,A
+Яка головна перевага automation?,Економія часу,Більше ручної роботи,Менше reproducibility,Відсутність Git,A
+Що таке hidden state у Notebook?,Прихований стан змінних,Git branch,JSON config,Docker image,A
+Що краще використовувати для long-term проєкту?,Структурований pipeline,Лише print(),Notebook без Git,Hardcode,A
+Яка команда показує коротку історію Git?,git log --oneline,git diff,git start,git yaml,A
+Що робить logging.basicConfig()?,Налаштовує логування,Запускає Git,Навчає модель,Створює notebook,A
+Що таке config/config.yaml?,YAML-конфігурація,CSV-файл,Модель,Notebook,A
+Що означає reproducible ML?,Можливість повторити експеримент,Видалення логів,Git commit,Створення API,A
+Що краще для запуску по розкладу у Linux?,Cron,Task Scheduler,Notebook,Excel,A
+Що краще для запуску по розкладу у Windows?,Task Scheduler,Cron only,Notebook,Git,A
+Що робить logging.info('Pipeline started')?,Записує старт pipeline,Створює модель,Видаляє дані,Фіксує seed,A
+Який підхід рекомендований у лекції?,"Notebook для EDA, scripts для production",Лише notebook,Лише Excel,Без Git,A
