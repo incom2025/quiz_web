@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Налаштування збережено</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            color: #166534;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+
+        td:first-child {
+            font-weight: bold;
+            background: #f8fafc;
+            width: 35%;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 25px;
+            background: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Налаштування тестування збережено</h1>
+
+    <table>
+        <tr>
+            <td>Навчальний рік</td>
+            <td>{{ config.academic_year }}</td>
+        </tr>
+        <tr>
+            <td>Семестр</td>
+            <td>{{ config.semester }}</td>
+        </tr>
+        <tr>
+            <td>Дисципліна</td>
+            <td>{{ config.discipline_name }}</td>
+        </tr>
+        <tr>
+            <td>Номер лекції</td>
+            <td>{{ config.lecture_number }}</td>
+        </tr>
+        <tr>
+            <td>Дата тестування</td>
+            <td>{{ config.test_date }}</td>
+        </tr>
+        <tr>
+            <td>День тижня</td>
+            <td>{{ config.weekday }}</td>
+        </tr>
+        <tr>
+            <td>Час початку</td>
+            <td>{{ config.start_time }}</td>
+        </tr>
+        <tr>
+            <td>Тривалість тесту</td>
+            <td>{{ config.duration_minutes }} хв</td>
+        </tr>
+        <tr>
+            <td>Кількість питань</td>
+            <td>{{ config.questions_count }}</td>
+        </tr>
+        <tr>
+            <td>CSV-файл</td>
+            <td>{{ config.csv_file }}</td>
+        </tr>
+        <tr>
+            <td>База результатів</td>
+            <td>{{ config.results_db }}</td>
+        </tr>
+        <tr>
+            <td>Назва листа результатів</td>
+            <td>{{ config.worksheet_name }}</td>
+        </tr>
+        <tr>
+            <td>Команда Microsoft Teams</td>
+            <td>{{ config.teams_group }}</td>
+        </tr>
+        <tr>
+            <td>Назва поклику</td>
+            <td>{{ config.test_link_name }}</td>
+        </tr>
+        <tr>
+            <td>Lesson ID</td>
+            <td>{{ config.lesson_id }}</td>
+        </tr>
+    </table>
+
+    <a href="/">Перейти до тестування</a>
+
+</div>
+</body>
+</html>

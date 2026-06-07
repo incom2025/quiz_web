@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Панель лектора</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #1f2937;
+        }
+
+        h2 {
+            margin-top: 30px;
+            color: #374151;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            color: #111827;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        input[readonly] {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+
+        button {
+            margin-top: 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .box {
+            background: #eef6ff;
+            border-left: 4px solid #2563eb;
+            padding: 12px 15px;
+            margin-bottom: 25px;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Панель керування тестуванням</h1>
+
+    <div class="box">
+        У цій формі лектор задає параметри дисципліни, лекції, тестування,
+        бази результатів, Google Sheets та Microsoft Teams.
+    </div>
+
+    <form method="post" action="/admin/config/save">
+        <input type="hidden" name="key" value="{{ key }}">
+
+        <h2>1. Навчальна інформація</h2>
+
+        <div class="row">
+            <div>
+                <label>Навчальний рік</label>
+                <input type="text"
+                       name="academic_year"
+                       value="{{ settings.academic_year }}"
+                       placeholder="2025-2026"
+                       required>
+            </div>
+
+            <div>
+                <label>Семестр</label>
+                <select name="semester" required>
+                    <option value="1" {% if settings.semester == "1" %}selected{% endif %}>1 семестр</option>
+                    <option value="2" {% if settings.semester == "2" %}selected{% endif %}>2 семестр</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Назва дисципліни</label>
+        <input type="text"
+               name="discipline_name"
+               value="{{ settings.discipline_name }}"
+               placeholder="Інструментарій роботи з даними"
+               required>
+
+        <label>Номер лекції</label>
+        <input type="text"
+               name="lecture_number"
+               value="{{ settings.lecture_number }}"
+               placeholder="5"
+               required>
+
+        <h2>2. Дата і час тестування</h2>
+
+        <div class="row">
+            <div>
+                <label>Дата тестування</label>
+                <input type="date"
+                       name="test_date"
+                       value="{{ settings.test_date }}"
+                       required>
+            </div>
+
+            <div>
+                <label>День тижня</label>
+                <select name="weekday" required>
+                    <option value="Понеділок" {% if settings.weekday == "Понеділок" %}selected{% endif %}>Понеділок</option>
+                    <option value="Вівторок" {% if settings.weekday == "Вівторок" %}selected{% endif %}>Вівторок</option>
+                    <option value="Середа" {% if settings.weekday == "Середа" %}selected{% endif %}>Середа</option>
+                    <option value="Четвер" {% if settings.weekday == "Четвер" %}selected{% endif %}>Четвер</option>
+                    <option value="Пʼятниця" {% if settings.weekday == "Пʼятниця" %}selected{% endif %}>Пʼятниця</option>
+                    <option value="Субота" {% if settings.weekday == "Субота" %}selected{% endif %}>Субота</option>
+                    <option value="Неділя" {% if settings.weekday == "Неділя" %}selected{% endif %}>Неділя</option>
+                </select>
+            </div>
+        </div>
+
+        <label>Час початку тестування</label>
+        <input type="time"
+               name="start_time"
+               value="{{ settings.start_time }}"
+               required>
+
+        <h2>3. Параметри тесту</h2>
+
+        <div class="row">
+            <div>
+                <label>Тривалість тесту, хв</label>
+                <input type="number"
+                       name="duration_minutes"
+                       value="{{ settings.duration_minutes }}"
+                       min="1"
+                       required>
+            </div>
+
+            <div>
+                <label>Кількість питань</label>
+                <input type="number"
+                       name="questions_count"
+                       value="{{ settings.questions_count }}"
+                       min="1"
+                       required>
+            </div>
+        </div>
+
+        <label>CSV-файл із питаннями</label>
+        <input type="text"
+               name="csv_file"
+               value="{{ settings.csv_file }}"
+               placeholder="questions_lecture5.csv"
+               required>
+
+        <h2>4. База результатів</h2>
+
+        <label>Назва бази даних результатів тестування</label>
+        <input type="text"
+               name="results_db"
+               value="{{ settings.results_db }}"
+               placeholder="results.db"
+               required>
+
+        <label>Назва листа в базі результатів</label>
+        <input type="text"
+               value="{{ settings.worksheet_name }}"
+               readonly>
+
+        <div class="hint">
+            Назва листа формується автоматично:
+            навчальний рік + семестр + назва предмету.
+        </div>
+
+        <h2>5. Microsoft Teams</h2>
+
+        <label>Назва команди в Microsoft Teams</label>
+        <input type="text"
+               name="teams_group"
+               value="{{ settings.teams_group }}"
+               placeholder="ФЕІ-32с">
+
+        <label>Назва поклику на тестування</label>
+        <input type="text"
+               name="test_link_name"
+               value="{{ settings.test_link_name }}"
+               placeholder="Тестування до лекції №5">
+
+        <button type="submit">Зберегти налаштування</button>
+    </form>
+
+</div>
+</body>
+</html>
