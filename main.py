@@ -7,28 +7,25 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
-import pytz
 from fastapi import FastAPI, Request, Form, HTTPException, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 
-# Google Sheets writer (ваш файл поруч)
 from google_sheets_writer import upsert_score_by_lesson
 
 
 # =========================
-# Налаштування
+# Налаштування за замовчуванням
 # =========================
-CSV_FILE = os.getenv("CSV_FILE", "questions_lecture12_fixed.csv")
+CSV_FILE = os.getenv("CSV_FILE", "questions_lecture2_50_quizweb_letters.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
-# Google Sheets env
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
-GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "").strip()  # напр. "Matrix"
-LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()  # optional
+GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "").strip()
+LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
 
 
 # =========================
@@ -44,33 +41,56 @@ def db_init():
                 name TEXT NOT NULL,
                 grp TEXT NOT NULL,
                 score INTEGER NOT NULL,
-                total INTEGER NOT NULL
+                total INTEGER NOT NULL,
+                discipline_name TEXT,
+                lecture_number TEXT,
+                academic_year TEXT,
+                semester TEXT,
+                worksheet_name TEXT,
+                lesson_id TEXT
             )
         """)
-        # settings: зберігаємо lesson_id (та інші налаштування)
+
         con.execute("""
             CREATE TABLE IF NOT EXISTS settings(
                 key TEXT PRIMARY KEY,
                 value TEXT NOT NULL
             )
         """)
-        con.commit()
 
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS test_config(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                academic_year TEXT NOT NULL,
+                semester TEXT NOT NULL,
+                discipline_name TEXT NOT NULL,
+                lecture_number TEXT NOT NULL,
+                test_date TEXT NOT NULL,
+                weekday TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                duration_minutes INTEGER NOT NULL,
+                questions_count INTEGER NOT NULL,
+                csv_file TEXT NOT NULL,
+                results_db TEXT NOT NULL,
+                worksheet_name TEXT NOT NULL,
+                teams_group TEXT,
+                test_link_name TEXT,
+                lesson_id TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
 
-def db_insert_result(surname: str, name: str, grp: str, score: int, total: int):
-    with sqlite3.connect(DB_FILE) as con:
-        con.execute(
-            "INSERT INTO results(ts, surname, name, grp, score, total) VALUES(?,?,?,?,?,?)",
-            (datetime.now().isoformat(timespec="seconds"), surname, name, grp, score, total),
-        )
         con.commit()
 
 
 def db_set_setting(key: str, value: str):
     with sqlite3.connect(DB_FILE) as con:
         con.execute(
-            "INSERT INTO settings(key, value) VALUES(?, ?) "
-            "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+            """
+            INSERT INTO settings(key, value)
+            VALUES(?, ?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            """,
             (key, value),
         )
         con.commit()
@@ -78,7 +98,10 @@ def db_set_setting(key: str, value: str):
 
 def db_get_setting(key: str) -> Optional[str]:
     with sqlite3.connect(DB_FILE) as con:
-        row = con.execute("SELECT value FROM settings WHERE key = ?", (key,)).fetchone()
+        row = con.execute(
+            "SELECT value FROM settings WHERE key = ?",
+            (key,)
+        ).fetchone()
         return row[0] if row else None
 
 
@@ -88,28 +111,142 @@ def db_delete_setting(key: str):
         con.commit()
 
 
+def db_insert_test_config(config: Dict[str, Any]):
+    with sqlite3.connect(DB_FILE) as con:
+        con.execute("""
+            INSERT INTO test_config(
+                academic_year,
+                semester,
+                discipline_name,
+                lecture_number,
+                test_date,
+                weekday,
+                start_time,
+                duration_minutes,
+                questions_count,
+                csv_file,
+                results_db,
+                worksheet_name,
+                teams_group,
+                test_link_name,
+                lesson_id,
+                created_at
+            )
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            config["academic_year"],
+            config["semester"],
+            config["discipline_name"],
+            config["lecture_number"],
+            config["test_date"],
+            config["weekday"],
+            config["start_time"],
+            config["duration_minutes"],
+            config["questions_count"],
+            config["csv_file"],
+            config["results_db"],
+            config["worksheet_name"],
+            config["teams_group"],
+            config["test_link_name"],
+            config["lesson_id"],
+            datetime.now().isoformat(timespec="seconds"),
+        ))
+        con.commit()
+
+
+def db_insert_result(
+    surname: str,
+    name: str,
+    grp: str,
+    score: int,
+    total: int
+):
+    config = get_current_config()
+
+    with sqlite3.connect(DB_FILE) as con:
+        con.execute("""
+            INSERT INTO results(
+                ts,
+                surname,
+                name,
+                grp,
+                score,
+                total,
+                discipline_name,
+                lecture_number,
+                academic_year,
+                semester,
+                worksheet_name,
+                lesson_id
+            )
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (
+            datetime.now().isoformat(timespec="seconds"),
+            surname,
+            name,
+            grp,
+            score,
+            total,
+            config["discipline_name"],
+            config["lecture_number"],
+            config["academic_year"],
+            config["semester"],
+            config["worksheet_name"],
+            config["lesson_id"],
+        ))
+        con.commit()
+
+
 def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     from openpyxl import Workbook
 
     wb = Workbook()
     ws = wb.active
     ws.title = "Results"
-    ws.append(["Timestamp", "Прізвище", "Ім'я", "Група", "Бали", "Всього"])
+
+    ws.append([
+        "Timestamp",
+        "Прізвище",
+        "Ім'я",
+        "Група",
+        "Бали",
+        "Всього",
+        "Дисципліна",
+        "Лекція",
+        "Навчальний рік",
+        "Семестр",
+        "Лист результатів",
+        "Lesson ID"
+    ])
 
     with sqlite3.connect(DB_FILE) as con:
-        rows = con.execute(
-            "SELECT ts, surname, name, grp, score, total FROM results ORDER BY id DESC"
-        ).fetchall()
+        rows = con.execute("""
+            SELECT
+                ts,
+                surname,
+                name,
+                grp,
+                score,
+                total,
+                discipline_name,
+                lecture_number,
+                academic_year,
+                semester,
+                worksheet_name,
+                lesson_id
+            FROM results
+            ORDER BY id DESC
+        """).fetchall()
 
-    for r in rows:
-        ws.append(list(r))
+    for row in rows:
+        ws.append(list(row))
 
     wb.save(xlsx_path)
     return xlsx_path
 
 
 # =========================
-# Lifespan (startup/shutdown)
+# Lifespan
 # =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -124,66 +261,118 @@ SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 
 # =========================
-# Доступ за часом (кожний четвер 16:15–16:30, Europe/Kyiv)
+# Допоміжні функції
 # =========================
-def is_test_time() -> bool:
-    tz = pytz.timezone("Europe/Kyiv")
-    now = datetime.now(tz)
-
-    # 3 = четвер (понеділок = 0)
-    if now.weekday() != 3:
-        return False
-
-    current_minutes = now.hour * 60 + now.minute
-    start_minutes = 16 * 60 + 15   # 16:15
-    end_minutes = 16 * 60 + 30     # 16:30
-
-    return start_minutes <= current_minutes <= end_minutes
+def _admin_check(key: str):
+    if key != ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
 
 
-@app.middleware("http")
-async def restrict_time(request: Request, call_next):
-    # Завжди дозволяємо технічні та адмін-ендпоінти
-    if request.url.path == "/ping" or request.url.path == "/routes" or request.url.path.startswith("/admin"):
-        return await call_next(request)
-
-    # Блокуємо все інше поза вікном часу
-    if not is_test_time():
-        return HTMLResponse(
-            """
-            <h2>Тест зараз недоступний</h2>
-            <p>Доступ відкривається кожного четверга з 16:15 до 16:30 (за київським часом).</p>
-            """,
-            status_code=403,
-        )
-
-    return await call_next(request)
+def _safe_name(value: str) -> str:
+    value = value.strip()
+    value = value.replace("/", "-")
+    value = value.replace("\\", "-")
+    value = value.replace(":", "-")
+    value = value.replace("*", "")
+    value = value.replace("?", "")
+    value = value.replace("[", "(")
+    value = value.replace("]", ")")
+    return value
 
 
-# =========================
-# Допоміжне
-# =========================
+def make_worksheet_name(
+    academic_year: str,
+    semester: str,
+    discipline_name: str
+) -> str:
+    discipline = _safe_name(discipline_name)
+    return f"{academic_year}_{semester}_семестр_{discipline}"
+
+
+def make_lesson_id(
+    academic_year: str,
+    semester: str,
+    discipline_name: str,
+    lecture_number: str
+) -> str:
+    discipline = _safe_name(discipline_name).replace(" ", "_")
+    return f"{academic_year}_sem_{semester}_{discipline}_lecture_{lecture_number}"
+
+
+def get_current_config() -> Dict[str, str]:
+    academic_year = db_get_setting("academic_year") or "2025-2026"
+    semester = db_get_setting("semester") or "2"
+    discipline_name = db_get_setting("discipline_name") or "Інструментарій роботи з даними"
+    lecture_number = db_get_setting("lecture_number") or "1"
+
+    worksheet_name = db_get_setting("worksheet_name") or make_worksheet_name(
+        academic_year,
+        semester,
+        discipline_name
+    )
+
+    lesson_id = db_get_setting("lesson_id") or make_lesson_id(
+        academic_year,
+        semester,
+        discipline_name,
+        lecture_number
+    )
+
+    return {
+        "academic_year": academic_year,
+        "semester": semester,
+        "discipline_name": discipline_name,
+        "lecture_number": lecture_number,
+        "test_date": db_get_setting("test_date") or datetime.now().strftime("%Y-%m-%d"),
+        "weekday": db_get_setting("weekday") or "Понеділок",
+        "start_time": db_get_setting("start_time") or "09:00",
+        "duration_minutes": db_get_setting("duration_minutes") or str(TEST_DURATION_SECONDS // 60),
+        "questions_count": db_get_setting("questions_count") or str(QUESTIONS_PER_TEST),
+        "csv_file": db_get_setting("csv_file") or CSV_FILE,
+        "results_db": db_get_setting("results_db") or DB_FILE,
+        "worksheet_name": worksheet_name,
+        "teams_group": db_get_setting("teams_group") or "",
+        "test_link_name": db_get_setting("test_link_name") or "",
+        "lesson_id": lesson_id,
+    }
+
+
 def _get_lesson_id() -> str:
-    # 1) lesson_id, який виставили через /admin/set_lesson (в SQLite)
-    db_val = db_get_setting("lesson_id")
-    if db_val and db_val.strip():
-        return db_val.strip()
+    config = get_current_config()
+    if config["lesson_id"]:
+        return config["lesson_id"]
 
-    # 2) optional env LESSON_ID
     if LESSON_ID_ENV:
         return LESSON_ID_ENV
 
-    # 3) fallback: сьогоднішня дата
     return datetime.now().strftime("%Y-%m-%d")
 
 
 def _sheets_enabled() -> bool:
-    return bool(GSHEET_ID and GSHEET_WORKSHEET)
+    config = get_current_config()
+    worksheet = config.get("worksheet_name", "")
+    return bool(GSHEET_ID and worksheet)
 
 
-def _admin_check(key: str):
-    if key != ADMIN_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden")
+def get_questions_per_test() -> int:
+    config = get_current_config()
+    try:
+        return int(config["questions_count"])
+    except ValueError:
+        return QUESTIONS_PER_TEST
+
+
+def get_test_duration_seconds() -> int:
+    config = get_current_config()
+    try:
+        return int(config["duration_minutes"]) * 60
+    except ValueError:
+        return TEST_DURATION_SECONDS
+
+
+def get_csv_file() -> str:
+    config = get_current_config()
+    return config["csv_file"] or CSV_FILE
 
 
 # =========================
@@ -197,12 +386,12 @@ def ping():
 @app.get("/routes")
 def routes():
     out = []
-    for r in app.routes:
-        methods = ",".join(sorted(getattr(r, "methods", []) or []))
+    for route in app.routes:
+        methods = ",".join(sorted(getattr(route, "methods", []) or []))
         out.append({
-            "path": getattr(r, "path", ""),
+            "path": getattr(route, "path", ""),
             "methods": methods,
-            "name": getattr(r, "name", "")
+            "name": getattr(route, "name", "")
         })
     return out
 
@@ -210,12 +399,13 @@ def routes():
 # =========================
 # Робота з питаннями
 # =========================
-def load_questions_from_csv(path: str) -> List[dict]:
+def load_questions_from_csv(path: str, questions_per_test: int) -> List[dict]:
     if not os.path.exists(path):
         raise FileNotFoundError(f"Не знайдено файл з питаннями: {path}")
 
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
+
         required = {"Question", "A", "B", "C", "D", "Prav_vid"}
 
         if not required.issubset(set(reader.fieldnames or [])):
@@ -225,8 +415,10 @@ def load_questions_from_csv(path: str) -> List[dict]:
             )
 
         questions = []
+
         for row in reader:
             pv = (row.get("Prav_vid") or "").strip().upper()
+
             if pv not in {"A", "B", "C", "D"}:
                 continue
 
@@ -242,24 +434,27 @@ def load_questions_from_csv(path: str) -> List[dict]:
             if q["Question"] and all(q[k] for k in ["A", "B", "C", "D"]):
                 questions.append(q)
 
-        if len(questions) < QUESTIONS_PER_TEST:
+        if len(questions) < questions_per_test:
             raise ValueError(
                 f"У CSV замало коректних питань: {len(questions)}. "
-                f"Потрібно щонайменше {QUESTIONS_PER_TEST}."
+                f"Потрібно щонайменше {questions_per_test}."
             )
 
         return questions
 
 
 # =========================
-# Маршрути
+# Основні маршрути тестування
 # =========================
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
+    config = get_current_config()
+
     return templates.TemplateResponse("index.html", {
         "request": request,
-        "duration_sec": TEST_DURATION_SECONDS,
-        "questions_per_test": QUESTIONS_PER_TEST
+        "duration_sec": get_test_duration_seconds(),
+        "questions_per_test": get_questions_per_test(),
+        "config": config,
     })
 
 
@@ -276,16 +471,21 @@ def start(
     if not surname or not name or not grp:
         return RedirectResponse("/", status_code=303)
 
-    all_q = load_questions_from_csv(CSV_FILE)
-    picked = random.sample(all_q, QUESTIONS_PER_TEST)
+    questions_per_test = get_questions_per_test()
+    csv_file = get_csv_file()
+
+    all_q = load_questions_from_csv(csv_file, questions_per_test)
+    picked = random.sample(all_q, questions_per_test)
 
     session_id = secrets.token_urlsafe(16)
+
     SESSIONS[session_id] = {
         "surname": surname,
         "name": name,
         "grp": grp,
         "questions": picked,
         "started": datetime.now().timestamp(),
+        "config": get_current_config(),
     }
 
     return RedirectResponse(f"/quiz/{session_id}", status_code=303)
@@ -294,11 +494,13 @@ def start(
 @app.get("/quiz/{session_id}", response_class=HTMLResponse)
 def quiz(request: Request, session_id: str):
     sess = SESSIONS.get(session_id)
+
     if not sess:
         return RedirectResponse("/", status_code=303)
 
+    duration = get_test_duration_seconds()
     elapsed = int(datetime.now().timestamp() - sess["started"])
-    remaining = max(0, TEST_DURATION_SECONDS - elapsed)
+    remaining = max(0, duration - elapsed)
 
     return templates.TemplateResponse("quiz.html", {
         "request": request,
@@ -308,12 +510,14 @@ def quiz(request: Request, session_id: str):
         "grp": sess["grp"],
         "questions": sess["questions"],
         "remaining": remaining,
+        "config": sess["config"],
     })
 
 
 @app.post("/submit/{session_id}", response_class=HTMLResponse)
 async def submit(request: Request, session_id: str):
     sess = SESSIONS.get(session_id)
+
     if not sess:
         return RedirectResponse("/", status_code=303)
 
@@ -322,32 +526,37 @@ async def submit(request: Request, session_id: str):
     score = 0
 
     for i, q in enumerate(questions):
-        a = (form.get(f"q{i}") or "").strip().upper()
-        if a == q["Prav_vid"]:
+        answer = (form.get(f"q{i}") or "").strip().upper()
+
+        if answer == q["Prav_vid"]:
             score += 1
 
-    # 1) SQLite (локально на Render)
-    db_insert_result(sess["surname"], sess["name"], sess["grp"], score, len(questions))
+    db_insert_result(
+        sess["surname"],
+        sess["name"],
+        sess["grp"],
+        score,
+        len(questions)
+    )
 
-    # 2) Google Sheets Matrix (75 рядків, кожний урок = колонка)
+    config = sess["config"]
+
     if _sheets_enabled():
         try:
-            lesson_id = _get_lesson_id()
             upsert_score_by_lesson(
                 sheet_id=GSHEET_ID,
-                lesson_id=lesson_id,
+                lesson_id=config["lesson_id"],
                 surname=sess["surname"],
                 name=sess["name"],
                 grp=sess["grp"],
                 score=score,
                 total=len(questions),
-                worksheet_name=GSHEET_WORKSHEET,
+                worksheet_name=config["worksheet_name"],
             )
         except Exception as e:
-            # не валимо тест студенту, просто лог в консоль Render
             print(f"[Sheets] write failed: {type(e).__name__}: {e}")
     else:
-        print("[Sheets] disabled: GSHEET_ID or GSHEET_WORKSHEET missing")
+        print("[Sheets] disabled: GSHEET_ID or worksheet_name missing")
 
     SESSIONS.pop(session_id, None)
 
@@ -355,6 +564,113 @@ async def submit(request: Request, session_id: str):
         "request": request,
         "score": score,
         "total": len(questions),
+        "config": config,
+    })
+
+
+# =========================
+# Панель лектора
+# =========================
+@app.get("/admin/config", response_class=HTMLResponse)
+def admin_config_page(request: Request, key: str = Query(...)):
+    _admin_check(key)
+
+    settings = get_current_config()
+
+    return templates.TemplateResponse("admin_config.html", {
+        "request": request,
+        "key": key,
+        "settings": settings,
+    })
+
+
+@app.post("/admin/config/save", response_class=HTMLResponse)
+async def admin_config_save(
+    request: Request,
+    key: str = Form(...),
+    academic_year: str = Form(...),
+    semester: str = Form(...),
+    discipline_name: str = Form(...),
+    lecture_number: str = Form(...),
+    test_date: str = Form(...),
+    weekday: str = Form(...),
+    start_time: str = Form(...),
+    duration_minutes: int = Form(...),
+    questions_count: int = Form(...),
+    csv_file: str = Form(...),
+    results_db: str = Form(...),
+    teams_group: str = Form(""),
+    test_link_name: str = Form(""),
+):
+    _admin_check(key)
+
+    academic_year = academic_year.strip()
+    semester = semester.strip()
+    discipline_name = discipline_name.strip()
+    lecture_number = lecture_number.strip()
+    test_date = test_date.strip()
+    weekday = weekday.strip()
+    start_time = start_time.strip()
+    csv_file = csv_file.strip()
+    results_db = results_db.strip()
+    teams_group = teams_group.strip()
+    test_link_name = test_link_name.strip()
+
+    worksheet_name = make_worksheet_name(
+        academic_year,
+        semester,
+        discipline_name
+    )
+
+    lesson_id = make_lesson_id(
+        academic_year,
+        semester,
+        discipline_name,
+        lecture_number
+    )
+
+    config = {
+        "academic_year": academic_year,
+        "semester": semester,
+        "discipline_name": discipline_name,
+        "lecture_number": lecture_number,
+        "test_date": test_date,
+        "weekday": weekday,
+        "start_time": start_time,
+        "duration_minutes": str(duration_minutes),
+        "questions_count": str(questions_count),
+        "csv_file": csv_file,
+        "results_db": results_db,
+        "worksheet_name": worksheet_name,
+        "teams_group": teams_group,
+        "test_link_name": test_link_name,
+        "lesson_id": lesson_id,
+    }
+
+    for key_name, value in config.items():
+        db_set_setting(key_name, str(value))
+
+    db_insert_test_config({
+        "academic_year": academic_year,
+        "semester": semester,
+        "discipline_name": discipline_name,
+        "lecture_number": lecture_number,
+        "test_date": test_date,
+        "weekday": weekday,
+        "start_time": start_time,
+        "duration_minutes": duration_minutes,
+        "questions_count": questions_count,
+        "csv_file": csv_file,
+        "results_db": results_db,
+        "worksheet_name": worksheet_name,
+        "teams_group": teams_group,
+        "test_link_name": test_link_name,
+        "lesson_id": lesson_id,
+    })
+
+    return templates.TemplateResponse("admin_config_saved.html", {
+        "request": request,
+        "config": config,
     })
 
 
@@ -369,10 +685,12 @@ def admin_set_lesson(
     _admin_check(key)
 
     lesson = lesson.strip()
+
     if not lesson:
         raise HTTPException(status_code=400, detail="lesson is empty")
 
     db_set_setting("lesson_id", lesson)
+
     return {"ok": True, "lesson_id": lesson}
 
 
@@ -382,6 +700,7 @@ def admin_set_lesson_today(key: str = Query(...)):
 
     lesson = datetime.now().strftime("%Y-%m-%d")
     db_set_setting("lesson_id", lesson)
+
     return {"ok": True, "lesson_id": lesson}
 
 
@@ -389,13 +708,16 @@ def admin_set_lesson_today(key: str = Query(...)):
 def admin_get_lesson(key: str = Query(...)):
     _admin_check(key)
 
+    config = get_current_config()
+
     return {
         "lesson_id_db": db_get_setting("lesson_id"),
         "lesson_id_env": LESSON_ID_ENV,
         "lesson_id_effective": _get_lesson_id(),
-        "worksheet": GSHEET_WORKSHEET,
+        "worksheet_name": config["worksheet_name"],
         "gsheet_id_set": bool(GSHEET_ID),
         "sheets_enabled": _sheets_enabled(),
+        "config": config,
     }
 
 
@@ -404,6 +726,7 @@ def admin_clear_lesson(key: str = Query(...)):
     _admin_check(key)
 
     db_delete_setting("lesson_id")
+
     return {"ok": True, "lesson_id_db": None}
 
 
@@ -412,7 +735,5 @@ def admin_export(key: str = Query(...)):
     _admin_check(key)
 
     path = export_results_to_xlsx("results.xlsx")
+
     return FileResponse(path, filename="results.xlsx")
-
-
-
