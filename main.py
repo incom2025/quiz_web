@@ -31,6 +31,16 @@ LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
 # =========================
 # База даних
 # =========================
+def add_column_if_not_exists(con, table_name, column_name, column_type):
+    columns = con.execute(f"PRAGMA table_info({table_name})").fetchall()
+    existing_columns = [col[1] for col in columns]
+
+    if column_name not in existing_columns:
+        con.execute(
+            f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
+        )
+
+
 def db_init():
     with sqlite3.connect(DB_FILE) as con:
         con.execute("""
@@ -41,15 +51,16 @@ def db_init():
                 name TEXT NOT NULL,
                 grp TEXT NOT NULL,
                 score INTEGER NOT NULL,
-                total INTEGER NOT NULL,
-                discipline_name TEXT,
-                lecture_number TEXT,
-                academic_year TEXT,
-                semester TEXT,
-                worksheet_name TEXT,
-                lesson_id TEXT
+                total INTEGER NOT NULL
             )
         """)
+
+        add_column_if_not_exists(con, "results", "discipline_name", "TEXT")
+        add_column_if_not_exists(con, "results", "lecture_number", "TEXT")
+        add_column_if_not_exists(con, "results", "academic_year", "TEXT")
+        add_column_if_not_exists(con, "results", "semester", "TEXT")
+        add_column_if_not_exists(con, "results", "worksheet_name", "TEXT")
+        add_column_if_not_exists(con, "results", "lesson_id", "TEXT")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS settings(
