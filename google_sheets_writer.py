@@ -156,7 +156,18 @@ def upsert_score_by_lesson(
 ):
     gc = _get_client()
     sh = gc.open_by_key(sheet_id)
-    ws = sh.worksheet(worksheet_name) if worksheet_name else sh.sheet1
+
+    if worksheet_name:
+        try:
+            ws = sh.worksheet(worksheet_name)
+        except Exception:
+            ws = sh.add_worksheet(
+                title=worksheet_name,
+                rows=100,
+                cols=30
+            )
+    else:
+        ws = sh.sheet1
 
     header = _ensure_header(ws)
 
