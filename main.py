@@ -588,10 +588,10 @@ def admin_config_page(request: Request, key: str = Query(...)):
 
     settings = get_current_config()
 
-return templates.TemplateResponse("admin_config.html", {
-    "request": request,
-    "settings": settings,
-    "key": key,
+    return templates.TemplateResponse("admin_config.html", {
+        "request": request,
+        "settings": settings,
+        "key": key,
     })
 
 
