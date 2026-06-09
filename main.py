@@ -61,6 +61,9 @@ def db_init():
         add_column_if_not_exists(con, "results", "semester", "TEXT")
         add_column_if_not_exists(con, "results", "worksheet_name", "TEXT")
         add_column_if_not_exists(con, "results", "lesson_id", "TEXT")
+        add_column_if_not_exists(con, "test_config", "end_time", "TEXT")
+        add_column_if_not_exists(con, "results", "test_start_time", "TEXT")
+        add_column_if_not_exists(con, "results", "test_end_time", "TEXT")
 
         con.execute("""
             CREATE TABLE IF NOT EXISTS settings(
@@ -79,6 +82,7 @@ def db_init():
                 test_date TEXT NOT NULL,
                 weekday TEXT NOT NULL,
                 start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
                 duration_minutes INTEGER NOT NULL,
                 questions_count INTEGER NOT NULL,
                 csv_file TEXT NOT NULL,
@@ -337,6 +341,7 @@ def get_current_config() -> Dict[str, str]:
         "test_date": db_get_setting("test_date") or datetime.now().strftime("%Y-%m-%d"),
         "weekday": db_get_setting("weekday") or "Понеділок",
         "start_time": db_get_setting("start_time") or "09:00",
+        "end_time": db_get_setting("end_time") or "10:00",
         "duration_minutes": db_get_setting("duration_minutes") or str(TEST_DURATION_SECONDS // 60),
         "questions_count": db_get_setting("questions_count") or str(QUESTIONS_PER_TEST),
         "csv_file": db_get_setting("csv_file") or CSV_FILE,
