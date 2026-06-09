@@ -51,6 +51,10 @@
             border-radius: 7px;
             text-decoration: none;
         }
+
+        a.export {
+            background: #16a34a;
+        }
     </style>
 </head>
 
@@ -85,8 +89,12 @@
             <td>{{ config.weekday }}</td>
         </tr>
         <tr>
-            <td>Час початку</td>
+            <td>Час початку сеансу</td>
             <td>{{ config.start_time }}</td>
+        </tr>
+        <tr>
+            <td>Час завершення сеансу</td>
+            <td>{{ config.end_time }}</td>
         </tr>
         <tr>
             <td>Тривалість тесту</td>
@@ -123,9 +131,11 @@
     </table>
 
     <a href="/">Перейти до тестування</a>
-<a href="/admin/export?key={{ key }}">
-    Завантажити результати в Excel
-</a>
+
+    <a class="export" href="/admin/export?key={{ key }}">
+        Завантажити результати в Excel
+    </a>
+
 </div>
 </body>
 </html>
