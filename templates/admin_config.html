@@ -99,7 +99,7 @@
     <h1>Панель керування тестуванням</h1>
 
     <div class="box">
-        У цій формі лектор задає параметри дисципліни, лекції, тестування,
+        Лектор задає параметри дисципліни, лекції, часу тестування, тривалості тесту,
         бази результатів, Google Sheets та Microsoft Teams.
     </div>
 
@@ -111,11 +111,7 @@
         <div class="row">
             <div>
                 <label>Навчальний рік</label>
-                <input type="text"
-                       name="academic_year"
-                       value="{{ settings.academic_year }}"
-                       placeholder="2025-2026"
-                       required>
+                <input type="text" name="academic_year" value="{{ settings.academic_year }}" required>
             </div>
 
             <div>
@@ -128,28 +124,17 @@
         </div>
 
         <label>Назва дисципліни</label>
-        <input type="text"
-               name="discipline_name"
-               value="{{ settings.discipline_name }}"
-               placeholder="Інструментарій роботи з даними"
-               required>
+        <input type="text" name="discipline_name" value="{{ settings.discipline_name }}" required>
 
         <label>Номер лекції</label>
-        <input type="text"
-               name="lecture_number"
-               value="{{ settings.lecture_number }}"
-               placeholder="5"
-               required>
+        <input type="text" name="lecture_number" value="{{ settings.lecture_number }}" required>
 
         <h2>2. Дата і час тестування</h2>
 
         <div class="row">
             <div>
                 <label>Дата тестування</label>
-                <input type="date"
-                       name="test_date"
-                       value="{{ settings.test_date }}"
-                       required>
+                <input type="date" name="test_date" value="{{ settings.test_date }}" required>
             </div>
 
             <div>
@@ -166,73 +151,59 @@
             </div>
         </div>
 
-        <label>Час початку тестування</label>
-        <input type="time"
-               name="start_time"
-               value="{{ settings.start_time }}"
-               required>
+        <div class="row">
+            <div>
+                <label>Час початку сеансу тестування</label>
+                <input type="time" name="start_time" value="{{ settings.start_time }}" required>
+            </div>
+
+            <div>
+                <label>Час завершення сеансу тестування</label>
+                <input type="time" name="end_time" value="{{ settings.end_time }}" required>
+            </div>
+        </div>
+
+        <div class="hint">
+            Студент може почати тест тільки у проміжку між часом початку і часом завершення.
+            Якщо він почав тест за хвилину до завершення сеансу, він має повний час на проходження тесту.
+        </div>
 
         <h2>3. Параметри тесту</h2>
 
         <div class="row">
             <div>
                 <label>Тривалість тесту, хв</label>
-                <input type="number"
-                       name="duration_minutes"
-                       value="{{ settings.duration_minutes }}"
-                       min="1"
-                       required>
+                <input type="number" name="duration_minutes" value="{{ settings.duration_minutes }}" min="1" required>
             </div>
 
             <div>
                 <label>Кількість питань</label>
-                <input type="number"
-                       name="questions_count"
-                       value="{{ settings.questions_count }}"
-                       min="1"
-                       required>
+                <input type="number" name="questions_count" value="{{ settings.questions_count }}" min="1" required>
             </div>
         </div>
 
         <label>CSV-файл із питаннями</label>
-        <input type="text"
-               name="csv_file"
-               value="{{ settings.csv_file }}"
-               placeholder="questions_lecture5.csv"
-               required>
+        <input type="text" name="csv_file" value="{{ settings.csv_file }}" required>
 
         <h2>4. База результатів</h2>
 
         <label>Назва бази даних результатів тестування</label>
-        <input type="text"
-               name="results_db"
-               value="{{ settings.results_db }}"
-               placeholder="results.db"
-               required>
+        <input type="text" name="results_db" value="{{ settings.results_db }}" required>
 
         <label>Назва листа в базі результатів</label>
-        <input type="text"
-               value="{{ settings.worksheet_name }}"
-               readonly>
+        <input type="text" value="{{ settings.worksheet_name }}" readonly>
 
         <div class="hint">
-            Назва листа формується автоматично:
-            навчальний рік + семестр + назва предмету.
+            Назва листа формується автоматично: навчальний рік + семестр + назва предмету.
         </div>
 
         <h2>5. Microsoft Teams</h2>
 
         <label>Назва команди в Microsoft Teams</label>
-        <input type="text"
-               name="teams_group"
-               value="{{ settings.teams_group }}"
-               placeholder="ФЕІ-32с">
+        <input type="text" name="teams_group" value="{{ settings.teams_group }}">
 
         <label>Назва поклику на тестування</label>
-        <input type="text"
-               name="test_link_name"
-               value="{{ settings.test_link_name }}"
-               placeholder="Тестування до лекції №5">
+        <input type="text" name="test_link_name" value="{{ settings.test_link_name }}">
 
         <button type="submit">Зберегти налаштування</button>
     </form>
