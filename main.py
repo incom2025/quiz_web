@@ -24,7 +24,6 @@ QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
 ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
-GSHEET_WORKSHEET = os.getenv("GSHEET_WORKSHEET", "").strip()
 LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
 
 
@@ -55,16 +54,6 @@ def db_init():
             )
         """)
 
-        add_column_if_not_exists(con, "results", "discipline_name", "TEXT")
-        add_column_if_not_exists(con, "results", "lecture_number", "TEXT")
-        add_column_if_not_exists(con, "results", "academic_year", "TEXT")
-        add_column_if_not_exists(con, "results", "semester", "TEXT")
-        add_column_if_not_exists(con, "results", "worksheet_name", "TEXT")
-        add_column_if_not_exists(con, "results", "lesson_id", "TEXT")
-        add_column_if_not_exists(con, "test_config", "end_time", "TEXT")
-        add_column_if_not_exists(con, "results", "test_start_time", "TEXT")
-        add_column_if_not_exists(con, "results", "test_end_time", "TEXT")
-
         con.execute("""
             CREATE TABLE IF NOT EXISTS settings(
                 key TEXT PRIMARY KEY,
@@ -94,6 +83,17 @@ def db_init():
                 created_at TEXT NOT NULL
             )
         """)
+
+        add_column_if_not_exists(con, "results", "discipline_name", "TEXT")
+        add_column_if_not_exists(con, "results", "lecture_number", "TEXT")
+        add_column_if_not_exists(con, "results", "academic_year", "TEXT")
+        add_column_if_not_exists(con, "results", "semester", "TEXT")
+        add_column_if_not_exists(con, "results", "worksheet_name", "TEXT")
+        add_column_if_not_exists(con, "results", "lesson_id", "TEXT")
+        add_column_if_not_exists(con, "results", "test_start_time", "TEXT")
+        add_column_if_not_exists(con, "results", "test_end_time", "TEXT")
+
+        add_column_if_not_exists(con, "test_config", "end_time", "TEXT")
 
         con.commit()
 
@@ -137,6 +137,7 @@ def db_insert_test_config(config: Dict[str, Any]):
                 test_date,
                 weekday,
                 start_time,
+                end_time,
                 duration_minutes,
                 questions_count,
                 csv_file,
@@ -147,7 +148,7 @@ def db_insert_test_config(config: Dict[str, Any]):
                 lesson_id,
                 created_at
             )
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             config["academic_year"],
             config["semester"],
@@ -156,6 +157,7 @@ def db_insert_test_config(config: Dict[str, Any]):
             config["test_date"],
             config["weekday"],
             config["start_time"],
+            config["end_time"],
             config["duration_minutes"],
             config["questions_count"],
             config["csv_file"],
@@ -174,10 +176,9 @@ def db_insert_result(
     name: str,
     grp: str,
     score: int,
-    total: int
+    total: int,
+    config: Dict[str, str],
 ):
-    config = get_current_config()
-
     with sqlite3.connect(DB_FILE) as con:
         con.execute("""
             INSERT INTO results(
@@ -192,9 +193,11 @@ def db_insert_result(
                 academic_year,
                 semester,
                 worksheet_name,
-                lesson_id
+                lesson_id,
+                test_start_time,
+                test_end_time
             )
-            VALUES(?,?,?,?,?,?,?,?,?,?,?,?)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             datetime.now().isoformat(timespec="seconds"),
             surname,
@@ -208,6 +211,8 @@ def db_insert_result(
             config["semester"],
             config["worksheet_name"],
             config["lesson_id"],
+            config["start_time"],
+            config["end_time"],
         ))
         con.commit()
 
@@ -231,7 +236,9 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
         "Навчальний рік",
         "Семестр",
         "Лист результатів",
-        "Lesson ID"
+        "Lesson ID",
+        "Початок сеансу",
+        "Кінець сеансу",
     ])
 
     with sqlite3.connect(DB_FILE) as con:
@@ -248,7 +255,9 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
                 academic_year,
                 semester,
                 worksheet_name,
-                lesson_id
+                lesson_id,
+                test_start_time,
+                test_end_time
             FROM results
             ORDER BY id DESC
         """).fetchall()
@@ -391,6 +400,69 @@ def get_csv_file() -> str:
     return config["csv_file"] or CSV_FILE
 
 
+def is_testing_session_open(config: Dict[str, str]) -> bool:
+    now = datetime.now()
+
+    session_start = datetime.strptime(
+        f"{config['test_date']} {config['start_time']}",
+        "%Y-%m-%d %H:%M"
+    )
+
+    session_end = datetime.strptime(
+        f"{config['test_date']} {config['end_time']}",
+        "%Y-%m-%d %H:%M"
+    )
+
+    return session_start <= now <= session_end
+
+
+def validate_session_time_config(
+    start_time: str,
+    end_time: str,
+    duration_minutes: int
+):
+    start_dt = datetime.strptime(start_time, "%H:%M")
+    end_dt = datetime.strptime(end_time, "%H:%M")
+
+    if end_dt <= start_dt:
+        raise HTTPException(
+            status_code=400,
+            detail="Час завершення сеансу тестування має бути більшим за час початку."
+        )
+
+    session_minutes = int((end_dt - start_dt).total_seconds() // 60)
+
+    if session_minutes < duration_minutes:
+        raise HTTPException(
+            status_code=400,
+            detail="Проміжок між початком і завершенням сеансу має бути не менший за тривалість тесту."
+        )
+
+
+def student_already_passed(
+    surname: str,
+    name: str,
+    grp: str,
+    lesson_id: str
+) -> bool:
+    with sqlite3.connect(DB_FILE) as con:
+        row = con.execute("""
+            SELECT id FROM results
+            WHERE lower(trim(surname)) = lower(trim(?))
+              AND lower(trim(name)) = lower(trim(?))
+              AND lower(trim(grp)) = lower(trim(?))
+              AND lesson_id = ?
+            LIMIT 1
+        """, (
+            surname,
+            name,
+            grp,
+            lesson_id
+        )).fetchone()
+
+    return row is not None
+
+
 # =========================
 # Debug endpoints
 # =========================
@@ -487,6 +559,23 @@ def start(
     if not surname or not name or not grp:
         return RedirectResponse("/", status_code=303)
 
+    config = get_current_config()
+
+    if not is_testing_session_open(config):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Тестування доступне лише у визначений лектором час: "
+                f"{config['test_date']} з {config['start_time']} до {config['end_time']}."
+            )
+        )
+
+    if student_already_passed(surname, name, grp, config["lesson_id"]):
+        raise HTTPException(
+            status_code=403,
+            detail="Ви вже проходили це тестування. Повторна спроба заборонена."
+        )
+
     questions_per_test = get_questions_per_test()
     csv_file = get_csv_file()
 
@@ -501,7 +590,7 @@ def start(
         "grp": grp,
         "questions": picked,
         "started": datetime.now().timestamp(),
-        "config": get_current_config(),
+        "config": config,
     }
 
     return RedirectResponse(f"/quiz/{session_id}", status_code=303)
@@ -514,7 +603,7 @@ def quiz(request: Request, session_id: str):
     if not sess:
         return RedirectResponse("/", status_code=303)
 
-    duration = get_test_duration_seconds()
+    duration = int(sess["config"]["duration_minutes"]) * 60
     elapsed = int(datetime.now().timestamp() - sess["started"])
     remaining = max(0, duration - elapsed)
 
@@ -547,15 +636,16 @@ async def submit(request: Request, session_id: str):
         if answer == q["Prav_vid"]:
             score += 1
 
+    config = sess["config"]
+
     db_insert_result(
         sess["surname"],
         sess["name"],
         sess["grp"],
         score,
-        len(questions)
+        len(questions),
+        config,
     )
-
-    config = sess["config"]
 
     if _sheets_enabled():
         try:
@@ -611,6 +701,7 @@ async def admin_config_save(
     test_date: str = Form(...),
     weekday: str = Form(...),
     start_time: str = Form(...),
+    end_time: str = Form(...),
     duration_minutes: int = Form(...),
     questions_count: int = Form(...),
     csv_file: str = Form(...),
@@ -627,10 +718,17 @@ async def admin_config_save(
     test_date = test_date.strip()
     weekday = weekday.strip()
     start_time = start_time.strip()
+    end_time = end_time.strip()
     csv_file = csv_file.strip()
     results_db = results_db.strip()
     teams_group = teams_group.strip()
     test_link_name = test_link_name.strip()
+
+    validate_session_time_config(
+        start_time=start_time,
+        end_time=end_time,
+        duration_minutes=duration_minutes,
+    )
 
     worksheet_name = make_worksheet_name(
         academic_year,
@@ -653,6 +751,7 @@ async def admin_config_save(
         "test_date": test_date,
         "weekday": weekday,
         "start_time": start_time,
+        "end_time": end_time,
         "duration_minutes": str(duration_minutes),
         "questions_count": str(questions_count),
         "csv_file": csv_file,
@@ -674,6 +773,7 @@ async def admin_config_save(
         "test_date": test_date,
         "weekday": weekday,
         "start_time": start_time,
+        "end_time": end_time,
         "duration_minutes": duration_minutes,
         "questions_count": questions_count,
         "csv_file": csv_file,
@@ -687,6 +787,7 @@ async def admin_config_save(
     return templates.TemplateResponse("admin_config_saved.html", {
         "request": request,
         "config": config,
+        "key": key,
     })
 
 
