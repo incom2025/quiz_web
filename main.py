@@ -4,6 +4,7 @@ import random
 import secrets
 import sqlite3
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
@@ -25,6 +26,12 @@ ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
 LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
+
+KYIV_TZ = ZoneInfo("Europe/Kyiv")
+
+
+def now_kyiv() -> datetime:
+    return datetime.now(KYIV_TZ).replace(tzinfo=None)
 
 
 # =========================
@@ -166,7 +173,7 @@ def db_insert_test_config(config: Dict[str, Any]):
             config["teams_group"],
             config["test_link_name"],
             config["lesson_id"],
-            datetime.now().isoformat(timespec="seconds"),
+            now_kyiv().isoformat(timespec="seconds"),
         ))
         con.commit()
 
@@ -199,7 +206,7 @@ def db_insert_result(
             )
             VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
-            datetime.now().isoformat(timespec="seconds"),
+            now_kyiv().isoformat(timespec="seconds"),
             surname,
             name,
             grp,
@@ -347,7 +354,7 @@ def get_current_config() -> Dict[str, str]:
         "semester": semester,
         "discipline_name": discipline_name,
         "lecture_number": lecture_number,
-        "test_date": db_get_setting("test_date") or datetime.now().strftime("%Y-%m-%d"),
+        "test_date": db_get_setting("test_date") or now_kyiv().strftime("%Y-%m-%d"),
         "weekday": db_get_setting("weekday") or "Понеділок",
         "start_time": db_get_setting("start_time") or "09:00",
         "end_time": db_get_setting("end_time") or "10:00",
@@ -370,7 +377,7 @@ def _get_lesson_id() -> str:
     if LESSON_ID_ENV:
         return LESSON_ID_ENV
 
-    return datetime.now().strftime("%Y-%m-%d")
+    return now_kyiv().strftime("%Y-%m-%d")
 
 
 def _sheets_enabled() -> bool:
@@ -401,7 +408,7 @@ def get_csv_file() -> str:
 
 
 def is_testing_session_open(config: Dict[str, str]) -> bool:
-    now = datetime.now()
+    now = now_kyiv()
 
     session_start = datetime.strptime(
         f"{config['test_date']} {config['start_time']}",
@@ -412,6 +419,10 @@ def is_testing_session_open(config: Dict[str, str]) -> bool:
         f"{config['test_date']} {config['end_time']}",
         "%Y-%m-%d %H:%M"
     )
+
+    print("KYIV NOW =", now)
+    print("SESSION START =", session_start)
+    print("SESSION END =", session_end)
 
     return session_start <= now <= session_end
 
@@ -589,7 +600,7 @@ def start(
         "name": name,
         "grp": grp,
         "questions": picked,
-        "started": datetime.now().timestamp(),
+        "started": now_kyiv().timestamp(),
         "config": config,
     }
 
@@ -604,7 +615,7 @@ def quiz(request: Request, session_id: str):
         return RedirectResponse("/", status_code=303)
 
     duration = int(sess["config"]["duration_minutes"]) * 60
-    elapsed = int(datetime.now().timestamp() - sess["started"])
+    elapsed = int(now_kyiv().timestamp() - sess["started"])
     remaining = max(0, duration - elapsed)
 
     return templates.TemplateResponse("quiz.html", {
@@ -815,7 +826,7 @@ def admin_set_lesson(
 def admin_set_lesson_today(key: str = Query(...)):
     _admin_check(key)
 
-    lesson = datetime.now().strftime("%Y-%m-%d")
+    lesson = now_kyiv().strftime("%Y-%m-%d")
     db_set_setting("lesson_id", lesson)
 
     return {"ok": True, "lesson_id": lesson}
@@ -828,6 +839,7 @@ def admin_get_lesson(key: str = Query(...)):
     config = get_current_config()
 
     return {
+        "kyiv_now": now_kyiv().isoformat(timespec="seconds"),
         "lesson_id_db": db_get_setting("lesson_id"),
         "lesson_id_env": LESSON_ID_ENV,
         "lesson_id_effective": _get_lesson_id(),
