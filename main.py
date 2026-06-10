@@ -662,7 +662,7 @@ async def submit(request: Request, session_id: str):
         try:
             upsert_score_by_lesson(
                 sheet_id=GSHEET_ID,
-                lesson_id=config["lesson_id"],
+                lesson_id=config["test_date"],
                 surname=sess["surname"],
                 name=sess["name"],
                 grp=sess["grp"],
