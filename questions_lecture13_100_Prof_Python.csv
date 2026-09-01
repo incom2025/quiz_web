@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що таке послідовне виконання?,Перемикання лише між процесами,Виконання однієї логічної роботи після іншої,Фактичне одночасне виконання на кількох ядрах,Обов'язкове використання ThreadPoolExecutor,B
+Що означає concurrency?,Тільки одночасне виконання на різних CPU,Лише послідовне виконання,Виключно multiprocessing,Прогрес кількох задач у перекривних часових інтервалах,D
+Що означає parallelism?,Лише перемикання контексту на одному ядрі,Створення Future,Очікування I/O,Фактичне одночасне виконання обчислень на кількох ядрах або процесорах,D
+Чому concurrency не дорівнює parallelism?,Конкурентні задачі можуть чергуватися навіть на одному ядрі,Ці поняття повністю тотожні,Parallelism завжди послідовний,Concurrency завжди потребує кількох процесорів,A
+Що характерно для CPU-bound задачі?,Більшість часу витрачається на обчислення,Вона не використовує CPU,Вона завжди працює тільки з файлами,Більшість часу витрачається на очікування мережі,A
+Який підхід часто кращий для pure Python CPU-bound задач?,queue.Queue,Тільки asyncio.sleep,Multiprocessing,Збільшення кількості threads без обмежень,C
+Що характерно для I/O-bound задачі?,Тільки математичні цикли,"Переважне очікування мережі, диска, БД або іншого ресурсу",Відсутність зовнішніх ресурсів,Постійне максимальне завантаження CPU,B
+Що може підвищити throughput I/O-bound задач?,Виключно shared memory,Лише збільшення chunksize,Тільки ProcessPoolExecutor,Threads або async I/O,D
+Що таке thread?,Формат серіалізації,Одиниця виконання всередині процесу,Окремий комп'ютер,Тип Future,B
+Як threads одного процесу працюють із пам'яттю?,Не мають доступу до глобальних об'єктів,Кожен завжди має повністю ізольовану пам'ять,Спільно використовують address space і багато ресурсів,Обмінюються даними тільки через multiprocessing.Queue,C
+Який ризик створює shared address space threads?,Race conditions на shared mutable state,Неможливість обміну даними,Відсутність synchronization,Автоматичне завершення процесу,A
+Що таке process?,Спільна змінна,Окрема одиниця виконання з власним address space та інтерпретатором,Thread усередині іншого thread,Тільки об'єкт Future,B
+Чому обмін даними між processes дорожчий?,Processes не можуть передавати дані,Через GIL усередині одного thread,Зазвичай потрібні serialization та IPC,Процеси використовують один stack,C
+Що таке GIL у традиційному CPython?,Thread-safe Queue,Process scheduler ОС,Механізм шифрування пам'яті,"Global Interpreter Lock, що обмежує одночасне виконання Python bytecode кількома threads одного процесу",D
+Який практичний вплив GIL на pure Python CPU-bound threading?,GIL створює окремий CPU core,GIL вимикає всі I/O operations,Threads завжди лінійно прискорюють CPU-код,Додавання threads часто не дає очікуваного прискорення,D
+Чому threading усе ж корисний для I/O-bound задач?,Тому що I/O завжди CPU-bound,Тому що threads не мають overhead,Тому що кожен thread має власний GIL,Під час багатьох blocking I/O operations GIL може звільнятися,D
+Чи робить GIL threads непотрібними?,"Так, крім multiprocessing","Так, threads у Python не використовуються",Лише у Windows,"Ні, вони корисні для I/O, blocking libraries і деяких native extensions",D
+Чи захищає GIL application data від race conditions?,"Так, повністю",Ні,Тільки для global variables,Тільки для list,B
+Що слід робити зі shared mutable state у threads?,Покладатися лише на GIL,Ніколи не використовувати Lock,Завжди робити global,Синхронізувати доступ відповідними primitives,D
+Який модуль стандартної бібліотеки використовується для потоків?,multiprocessing тільки,asyncio.Queue,threading,subprocess.Future,C
+Що задає параметр target у threading.Thread?,Timeout join,"Функцію, яку виконуватиме thread",Ім'я process,Кількість CPU,B
+Що робить Thread.start()?,Запускає thread,Виконує target у main thread без створення thread,Очікує його завершення,Завершує process,A
+Що робить Thread.join()?,Створює новий thread,Очікує завершення thread,Скасовує thread примусово,Блокує target до start,B
+Чи створює прямий виклик target function новий thread?,Ні,Тільки якщо функція має args,"Так, завжди",Тільки з daemon=True,A
+Для чого корисне ім'я thread?,Для serialization,Для створення process,Для logging і діагностики,Для обходу GIL,C
+Як отримати поточний thread?,Thread.get_current(),threading.current_thread(),threading.active_process(),os.current_thread(),B
+Що таке daemon thread?,"Thread, який не може завершитися","Thread, який не утримує Python process від завершення, якщо залишилися лише daemon threads",Thread без target,Thread із власним process,B
+Чому daemon mode не слід використовувати замість коректного shutdown?,Важливий запис або cleanup може не завершитися гарантовано,Daemon не підтримує I/O,Daemon вимикає GIL,Daemon завжди повільніший,A
+Що таке race condition?,Завжди timeout,Будь-яка помилка import,Тип deadlock,"Ситуація, коли результат залежить від timing та interleaving execution units",D
+Що таке critical section?,Лише блок except,Будь-який print,"Ділянка коду, де shared state має змінюватися атомарно з погляду application logic",Код створення process,C
+Для чого threading.Lock?,Щоб передавати objects між processes,Щоб лише один thread одночасно виконував critical section,Щоб створити кілька threads,Щоб прискорити CPU-bound код,B
+Який стиль використання Lock названо найбезпечнішим?,Через asyncio.run,Через global sleep,Через context manager with,Тільки ручні acquire без release,C
+Чому надмірно великий critical section небажаний?,Знижує concurrency,Усуває synchronization overhead,Автоматично створює process,Збільшує parallelism,A
+Що таке RLock?,"Reentrant lock, який той самий thread може захопити повторно",Lock лише для processes,Read-only lock,Remote lock,A
+Чи слід автоматично використовувати RLock замість Lock?,"Так, завжди","Ні, лише коли справді потрібне повторне захоплення тим самим thread",Тільки для I/O,RLock і Lock не відрізняються,B
+Що таке deadlock?,Прискорення через кілька locks,Завершення всіх threads,Тип Future,Безкінечне взаємне очікування execution units на ресурси одна одної,D
+Який класичний сценарій deadlock наведено?,Два threads захоплюють два locks у різному порядку,Один thread використовує Queue,Thread викликає current_thread,Process завершується після join,A
+Як зменшити ризик deadlock?,Ігнорувати порядок locks,Захоплювати locks в однаковому порядку та тримати critical sections короткими,Збільшувати кількість locks,Використовувати довгі critical sections,B
+Яка архітектурна альтернатива shared mutable state може зменшити ризик deadlock?,Process-per-item,Більше global variables,Message passing,Thread-per-item,C
+Для чого threading.Event?,Для сигналізації між threads,Для серіалізації process arguments,Для створення pool,Для взаємного виключення як Lock,A
+Що робить Event.set()?,Захоплює GIL назавжди,Створює Semaphore,"Встановлює прапорець, після чого waiting threads можуть продовжити",Скасовує process,C
+Для чого threading.Semaphore?,Для створення необмежених workers,Для запуску processes,Для сортування Futures,"Для обмеження кількості threads, які одночасно використовують ресурс",D
+Що таке threading.Condition?,Async HTTP client,Process pool,"Primitive, що поєднує lock із очікуванням зміни умови",Формат IPC,C
+"Що зазвичай простіше для producer-consumer, ніж ручне використання Condition?",RLock,queue.Queue,Process,os.cpu_count,B
+Чому queue.Queue зручна між threads?,Вона обходить GIL для CPU-коду,Вона створює process для кожного item,Вона thread-safe і зменшує потребу вручну захищати shared collections,Вона не підтримує blocking,C
+Що робить Queue.task_done()?,Змінює maxsize,Додає новий item,"Повідомляє, що отриманий item оброблено",Завершує всі threads,C
+Що дає Queue(maxsize=100)?,Автоматичний CPU parallelism,Bounded buffer і природний backpressure,Необмежений queue,100 processes,B
+Що таке backpressure?,GIL optimization,"Механізм, за якого producer чекає, якщо consumers не встигають і buffer заповнений",Тип deadlock,Примусове завершення consumers,B
+Для чого threading.local()?,"Для thread-local значень, окремих для кожного thread",Для shared memory між processes,Для pool.map,Для створення global lock,A
+Чому threads можуть бути ефективними для кількох blocking I/O operations?,Бо кожен thread є process,"Поки один thread очікує I/O, інші можуть просувати роботу",Бо GIL прискорює арифметику,Бо serialization безкоштовна,B
+Чому threads часто не прискорюють чистий CPU-bound Python-код?,"GIL серіалізує значну частину Python bytecode, а також є scheduling overhead",CPU-bound код завжди чекає I/O,Threads не можуть виконувати функції,Через Queue,A
+Для чого модуль multiprocessing?,Для HTTP requests,Для type checking,Тільки для thread synchronization,Для створення окремих Python processes,D
+Чому multiprocessing може використовувати кілька CPU cores для pure Python?,Через threading.local,Кожен process має власний інтерпретатор і типовий власний GIL,Processes не виконують bytecode,Усі processes спільно використовують один GIL,B
+Навіщо захищати multiprocessing entry point через if __name__ == '__main__'?,Щоб увімкнути GIL,Щоб child process на spawn-платформах не повторював код створення нових processes,Щоб створити daemon thread,Щоб прискорити Queue,B
+Які process start methods згадані?,"spawn, fork і forkserver","map, imap і starmap","start, join і stop","read, write і execute",A
+Чому переносимий multiprocessing-код не повинен покладатися на випадковий inherited state?,Усі start methods повністю однакові,Start methods відрізняються поведінкою успадкування стану,Processes завжди спільно використовують globals,Serialization заборонена,B
+Що означає ізоляція пам'яті processes?,Parent і child завжди мають одну пам'ять,Усі globals автоматично синхронізуються,Process не має variables,Зміна звичайної global variable у child не змінює її копію в parent,D
+Що потрібно для обміну даними між ізольованими processes?,threading.local,Тільки global variable,Thread.name,IPC mechanisms або повернення результатів через pool/future,D
+Чому serialization важлива у spawn-based multiprocessing?,Вона робить open socket універсально переносимим,Process arguments мають бути передані child у серіалізованому вигляді,Вона усуває process startup,Вона потрібна лише для threads,B
+Які objects можуть бути проблемними для передачі child process?,Прості strings завжди,"Локальні closures, open sockets та інші непереносні objects",Serializable dict завжди,Звичайні integers завжди,B
+Для чого multiprocessing.Queue?,Для захисту GIL,Для створення Future,Для thread-local data,Для передачі serializable objects між processes,D
+Що таке multiprocessing Pipe?,"Канал між processes, який може бути двостороннім або одностороннім",Thread lock,CPU cache,Executor,A
+Чому Queue часто простіша за Pipe для producer-consumer?,Pipe працює лише з threads,Queue не використовує IPC,Pipe не може передавати дані,Вона краще відповідає багатьом producer-consumer сценаріям,D
+Що дає multiprocessing shared memory?,Повністю усуває synchronization,Може зменшити копіювання великих даних,Автоматично робить всі objects immutable,Вимикає IPC,B
+Який недолік shared memory?,Не дозволяє зберігати дані,Працює тільки з HTTP,Завжди повільніша за disk,Повертає проблему synchronization і потребує lifecycle management,D
+Коли multiprocessing.Lock може бути потрібний?,Коли processes справді працюють зі shared resource,Для Future.result,Для ThreadPoolExecutor,Для кожної локальної змінної,A
+Чому process pool зручніший за process-per-item для багатьох однотипних CPU jobs?,Не має startup overhead взагалі,Повторно використовує набір worker processes і розподіляє jobs,Створює новий process для кожного рядка,Виконує все в main process,B
+Для чого multiprocessing.Pool?,Для logging only,Для async event loop,Для керування набором worker processes і розподілу функцій,Для thread synchronization,C
+Що робить Pool.map?,Не повертає результатів,Створює Future для кожного item,Завжди в порядку завершення,Повертає результати в порядку input,D
+Чим imap корисний порівняно з map?,Не виконує функцію,Працює тільки з одним argument,Може дозволяти поступову обробку результатів,Завжди створює threads,C
+Для чого Pool.starmap?,Для функцій із кількома аргументами,Для HTTP timeout,Для synchronization locks,Для daemon threads,A
+Що таке chunksize?,Число threads у process,Кількість CPU cores,"Кількість jobs, згрупованих для передачі worker-у",Розмір Lock,C
+Чому chunksize впливає на performance?,Він вимикає serialization,Він визначає GIL,Chunksize впливає лише на logging,"Надто дрібна передача створює IPC overhead, а grouping може його зменшити",D
+Що надає concurrent.futures?,Async HTTP server,Тільки низькорівневі locks,Єдиний високорівневий API Executor/Future для threads і processes,Лише multiprocessing.Queue,C
+Що таке Future?,Shared memory segment,"Об'єкт, що представляє результат, який може ще не бути готовим",Thread name,Process start method,B
+Що можна робити через Future?,Створити CPU core,"Отримати result/exception, перевірити completion або скасувати pending operation",Успадкувати address space,Змінити GIL,B
+Для чого ThreadPoolExecutor?,Для shared_memory,Для pure Python CPU-bound як основний вибір,"Для керування пулом threads, особливо для blocking I/O",Для створення process start method,C
+Що робить Executor.submit()?,Передає одну функцію на виконання і негайно повертає Future,Створює Queue,Блокує до завершення всіх jobs,Повертає Process object,A
+Що робить Executor.map()?,Виконує однорідні jobs і повертає результати в input order,Завжди обробляє у completion order,Створює daemon threads,Повертає тільки exceptions,A
+Для чого concurrent.futures.as_completed()?,Для збереження input order,Для блокування GIL,Для створення shared memory,Для обробки Futures у порядку фактичного завершення,D
+Для чого ProcessPoolExecutor?,Для thread-local state,Для blocking I/O тільки,Для високорівневого виконання незалежних CPU-bound functions у worker processes,Для asyncio Tasks,C
+Коли ThreadPoolExecutor зазвичай кращий за ProcessPoolExecutor?,Для pure Python CPU-heavy jobs завжди,Для уникнення GIL у CPU loops,Для максимальної process isolation,"Для blocking I/O та випадків, де shared memory є перевагою",D
+Коли ProcessPoolExecutor зазвичай доречніший?,Для одного короткого print,Для CPU-heavy pure Python functions із прийнятною serialization cost,Для network I/O з async client,Для shared mutable globals без IPC,B
+Як exception з worker передається через Future?,Автоматично ігнорується,Повторно піднімається під час future.result(),Перетворюється на warning без доступу caller-а,Завжди стає None,B
+Що робить future.result(timeout=...)?,Обмежує час очікування caller-а на результат,Змінює worker count,Гарантовано зупиняє running operation,Вимикає exception propagation,A
+"Чи означає timeout future.result(), що running operation автоматично зупинилася?","Так, завжди",Тільки для ThreadPool,"Ні, не обов'язково",Тільки для ProcessPool,C
+Коли Future.cancel() може успішно скасувати job?,Лише після shutdown,Якщо job ще не почала виконуватися,"Завжди, навіть running thread",Тільки після future.result,B
+Чи можна через Future API безпечно примусово зупинити running thread?,"Так, через as_completed",Ні,"Так, через result(timeout)","Так, через cancel завжди",B
+Чому Executor зручно використовувати як context manager?,Він вимикає serialization,Він автоматично робить jobs CPU-bound,Він усуває всі exceptions,Він забезпечує контрольований shutdown,D
+Які витрати має parallel execution?,Паралельність не має overhead,"Worker startup, context switching, synchronization, serialization, IPC, cache effects і memory",Лише network latency,Тільки вартість print,B
+Чому маленька задача може бути швидшою послідовно?,Sequential завжди використовує більше processes,GIL забороняє sequential code,Через Queue,Overhead паралелізації може перевищити виграш,D
+Що описує закон Амдала?,Кількість locks у thread,HTTP timeout,Розмір Queue,Максимальне прискорення обмежене послідовною частиною програми,D
+Що таке task granularity?,Тип GIL,Обсяг роботи в одному job,Число exception types,Кількість логічних CPU,B
+Який ризик надто дрібних jobs?,Велика частка часу витрачається на scheduling та IPC,Вони завжди краще балансують без overhead,Вони вимикають serialization,Вони не можуть виконуватися в pool,A
+Який ризик надто великих jobs?,Відсутність CPU usage,Неможливість повернути result,Можливе погане load balancing,Завжди deadlock,C
+Що таке load balancing?,"Розподіл роботи так, щоб workers не простоювали через нерівну тривалість jobs",Захист shared state,Thread naming,Process serialization,A
+Від чого залежить оптимальна кількість workers?,"Від workload, CPU, memory bandwidth, libraries і resource limits",Завжди дорівнює 100,Лише від кількості files,Тільки від Python version,A
+Для чого os.cpu_count()?,Щоб отримати орієнтовну кількість логічних CPU,Щоб вимкнути GIL,Щоб створити саме стільки processes автоматично,Щоб виміряти elapsed time,A
+Який інструмент лекція рекомендує для вимірювання elapsed time?,threading.current_thread(),time.perf_counter(),time.sleep(),os.cpu_count(),B
+Чому одноразовий benchmark може бути нерепрезентативним?,Benchmark завжди детермінований,Cache ніколи не впливає,Process startup не впливає на час,"На нього впливають warm-up, caches, background load, startup і variance",D

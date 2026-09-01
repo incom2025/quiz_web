@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що охоплює мережеве програмування за лекцією?,Тільки створення SQL-таблиць,Обмін даними між процесами через мережу,Лише роботу з локальними файлами,Виключно компіляцію Python,B
+Що визначає API?,Фізичну топологію мережі,Тільки формат JSON,Версію Python,Контракт взаємодії між програмними компонентами,D
+Хто ініціює request у моделі клієнт–сервер?,Сервер,DNS завжди,База даних,Клієнт,D
+Що робить сервер у моделі клієнт–сервер?,Обробляє request і повертає response,Лише зберігає JSON,Завжди ініціює request до клієнта,Тільки створює URL,A
+Які компоненти може містити типовий URL?,"Scheme, host, port, path, query string і fragment",Лише scheme та header,"Method, status code і body",Тільки host і body,A
+Чи передається URL fragment HTTP-серверу зазвичай?,Тільки через HTTPS,Лише для POST,Ні,"Так, завжди",C
+Що таке HTTP?,Формат серіалізації Python,Прикладний request-response протокол,Реляційна СУБД,Мова програмування,B
+Чим HTTPS відрізняється від HTTP?,HTTPS не має status codes,HTTPS працює тільки з JSON,HTTPS не використовує HTTP semantics,HTTP працює поверх захищеного TLS-з'єднання,D
+Що концептуально містить HTTP request?,Лише JSON body,"Method, target, headers і за потреби body",Тільки status code,Тільки URL fragment,B
+Що містить HTTP response?,Лише query parameters,Тільки HTTP method,"Status code, headers і response body",Тільки path parameter,C
+Для чого типовий GET?,Для отримання ресурсу,Для повної заміни ресурсу,Для створення ресурсу завжди,Для часткового оновлення,A
+Для чого типовий POST?,Тільки для видалення,Для створення ресурсу або запуску операції,Для безпечного читання ресурсу,Для повної заміни ресурсу,B
+Для чого типовий PUT?,Для читання,Для отримання документації,Для повної заміни ресурсу,Для часткового оновлення,C
+Для чого типовий PATCH?,Для встановлення TLS,Для DNS-запиту,Для отримання ресурсу,Для часткової зміни ресурсу,D
+Для чого типовий DELETE?,Для сортування JSON,Для валідації Pydantic,Для створення ресурсу,Для видалення ресурсу,D
+Що означає safe HTTP method?,Він не може повернути помилку,Він завжди idempotent лише через назву,Він завжди використовує HTTPS,Його основний ефект не повинен змінювати server state,D
+Що означає idempotent operation?,Запит завжди повертає 200,Операція ніколи не змінює стан,Операція виконується лише один раз,"Повторні однакові запити мають той самий intended effect, що й один",D
+Який метод є safe та idempotent за лекцією?,POST,GET,PATCH,CONNECT,B
+"Які методи зазвичай idempotent, але не safe?",POST і PATCH,OPTIONS і POST,GET і HEAD лише,PUT і DELETE,D
+Що означає клас status codes 2xx?,Перенаправлення,Помилка клієнта,Успіх,Помилка сервера,C
+Що означає клас status codes 4xx?,Помилка сервера,Помилка або некоректний request клієнта,Успіх,Інформаційна відповідь,B
+Що означає клас status codes 5xx?,Помилка на стороні сервера,Успішне створення,Перенаправлення,Помилка валідації клієнта лише,A
+Що означає HTTP 200 OK?,Ресурс створено,Успішна відповідь,Ресурс не знайдено,Rate limit,B
+Що означає HTTP 201 Created?,Ресурс створено,Доступ заборонено,Успіх без body,Внутрішня помилка,A
+Що означає HTTP 204 No Content?,Redirect,Ресурс створено з body обов'язково,Успіх без response body,Validation error,C
+Що означає HTTP 400 Bad Request?,Ресурс створено,Некоректний request,Потрібна автентифікація,Сервіс тимчасово недоступний,B
+Що означає HTTP 401 Unauthorized у контексті лекції?,Конфлікт стану,Потрібна або некоректна автентифікація,Доступ заборонено після успішної ідентифікації,Ресурс не знайдено,B
+Що означає HTTP 403 Forbidden?,Доступ заборонено,Потрібна лише валідація JSON,Сервіс створив ресурс,Ресурс не знайдено,A
+Що означає HTTP 404 Not Found?,Успіх без body,Конфлікт стану,Rate limit,Ресурс не знайдено,D
+Що означає HTTP 409 Conflict?,Перенаправлення,Внутрішня помилка сервера,Конфлікт стану,Успішне читання,C
+Що означає HTTP 422 Unprocessable Content у лекції?,Успішне створення,"Семантично некоректні дані, часто validation error",Rate limit,Відсутність TLS,B
+Що означає HTTP 429 Too Many Requests?,Помилка DNS,Успіх,Перевищення rate limit,Ресурс не знайдено,C
+Що означає HTTP 500 Internal Server Error?,Внутрішня помилка сервера,Успіх без body,Перенаправлення,Помилка клієнтської автентифікації,A
+Що означає HTTP 503 Service Unavailable?,Сервіс тимчасово недоступний,Доступ дозволено,Ресурс створено,Validation error,A
+Для чого HTTP headers?,Для заміни HTTP method,Для передавання metadata про request/response,Для зберігання Python bytecode,Для створення URL path,B
+Що описує Content-Type?,Бажаний клієнтом формат відповіді,Тип HTTP method,Ідентифікатор ресурсу,Формат request або response body,D
+Що повідомляє header Accept?,Які media types клієнт бажає отримати,Який пароль використовує сервер,Який status code буде повернуто,Який path parameter передано,A
+Який Content-Type типовий для JSON?,binary/http,application/json,text/python,application/sql,B
+Що таке path parameter?,Тип TLS,Необов'язковий HTTP header,Частина адреси конкретного ресурсу,Формат response body,C
+Для чого query parameters особливо зручні?,"Для фільтрації, pagination, sorting і необов'язкових модифікаторів",Для визначення HTTP status,Для зберігання великих binary payloads,Для передачі passwords,A
+Коли доцільно використовувати request body?,Тільки для GET,Для status code,"Для структурованих даних, які не слід кодувати в path/query",Для URL fragment,C
+Чи гарантує синтаксично коректний JSON правильний бізнес-контракт?,"Так, завжди",Лише якщо Content-Type JSON,"Так, якщо status 200","Ні, дані після десеріалізації треба валідовувати",D
+Що таке REST?,HTTP status code,Python web framework,"Архітектурний стиль, а не конкретний wire protocol",JSON serializer,C
+Що характерно для resource-oriented API?,Дієслово create/delete у кожному URL обов'язково,Ресурсні URL і стандартні HTTP methods,Відсутність status codes,Тільки один endpoint,B
+Який endpoint більш resource-oriented для створення користувача?,PATCH /newUser,POST /createUser,POST /users,GET /createUser,C
+Що означає statelessness у REST-подібному API?,Усі requests повинні бути GET,Сервер не може мати database,Кожен request містить достатню інформацію для обробки на рівні application protocol,Сервер не може використовувати cache,C
+Чи забороняє statelessness server-side databases або caches?,Лише caches,Ні,Лише databases,"Так, повністю",B
+Навіщо pagination у list endpoints?,Щоб вимкнути JSON,Щоб не повертати безконтрольно величезні набори об'єктів,Щоб замінити authentication,Щоб приховати status code,B
+Яка pagination проста за лекцією?,Offset pagination,Тільки cursor pagination,Header-only pagination,DNS pagination,A
+Яка pagination краще масштабується для великих наборів?,Fragment pagination,Cursor/keyset pagination,Великий OFFSET завжди,POST pagination,B
+Навіщо versioning API?,Для керованої еволюції контракту та breaking changes,Для шифрування токенів,Для зміни Python version,Для заміни TLS,A
+Який приклад versioned path наведено?,/v1.py/users,/api?method=v1,/users#v1,/api/v1/users,D
+Що робить HTTP client?,Компілює FastAPI,"Формує request, виконує network I/O та повертає response",Створює SQL schema,Тільки валідовує Pydantic model,B
+Які популярні HTTP client libraries згадано?,Django і Flask,requests і HTTPX,sqlite3 і psycopg,NumPy і pandas,B
+Як у requests краще передавати query parameters?,Через params як структуру даних,Через response body,Склеювати URL вручну завжди,Через status_code,A
+Навіщо явно задавати timeout для network call?,Щоб завжди отримати 200,Щоб запит не чекав надто довго,Щоб автоматично виконати retry,Щоб вимкнути TLS,B
+Від чого слід обирати timeout у production?,Від кількості Pydantic fields,Від довжини URL лише,Від версії Git,Від SLA та типу операції,D
+Що робить response.raise_for_status()?,Парсить JSON без перевірки,Автоматично повторює request,Змінює status на 200,Породжує exception для unsuccessful HTTP status codes,D
+Які network errors рекомендується розрізняти?,Тільки ImportError,"Timeout, connection failure та HTTP error",Лише ValueError,Тільки SyntaxError,B
+Чому не слід ловити Exception і мовчки повертати порожні дані?,Бо JSON не може бути порожнім,Це приховує реальну причину відмови та ускладнює надійну обробку,Бо timeout завжди успішний,Бо Python забороняє except Exception,B
+Що робить параметр json у requests.post?,Створює FastAPI model,Вимикає validation,Передає query string,Серіалізує Python structure у JSON і встановлює відповідний Content-Type,D
+Як передають custom headers у requests?,Через dict у параметрі headers,Через URL fragment,Через status_code,Через params лише,A
+Де не слід hardcode authentication token?,У контрольованому runtime configuration,В environment variable,У захищеному secret management,У source code,D
+Для чого requests.Session?,Для створення FastAPI endpoints,Для повторного використання налаштувань і connection pooling,Для Pydantic validation,Для SQL transaction,B
+Яку особливість HTTPX підкреслено в лекції?,Працює тільки асинхронно,Не підтримує connection pooling,Не підтримує timeout,Має synchronous і asynchronous API,D
+Для чого httpx.AsyncClient?,Для неблокуючого очікування network I/O в async-коді,Для створення Pydantic schemas,Для синхронного blocking I/O,Для запуску SQL migrations,A
+Що слід з'ясувати перед інтеграцією зовнішнього API?,Лише назву сервісу,"Base URL, authentication, schemas, rate limits, pagination, errors, retry policy і versioning",Тільки один успішний приклад,Тільки колір документації,B
+Де не слід зберігати API key/token?,У захищеному runtime environment,В environment variable,"У відкритому Git repository, логах або exception messages",У secret manager,C
+Як у прикладі читається API token?,З відкритого Git файла,З response status,З URL query,З environment variable,D
+Що часто означає status 429 від зовнішнього API?,Потрібно вимкнути timeout,JSON некоректний синтаксично,Потрібно зменшити частоту запитів і врахувати rate-limit contract,Ресурс успішно створено,C
+Коли retry доречний?,"Для transient failures, коли повторення операції безпечне",Лише після 201,Завжди для POST,Для будь-якої помилки без аналізу,A
+Чому необережний retry POST небезпечний?,Він видаляє headers,POST завжди idempotent,Може створити дублікати,Він вимикає TLS,C
+Що може зробити write operation безпечнішою для повтору?,Відсутність timeout,Status 500,URL fragment,Idempotency key або інший механізм API,D
+Навіщо валідовувати response зовнішнього API?,Щоб вимкнути rate limiting,Бо response.json() завжди повертає None,Зовнішня schema може не відповідати очікуванням,Щоб змінити HTTP method,C
+Навіщо інкапсулювати network calls у client/gateway class?,Щоб кожен service сам створював sockets,Щоб відокремити transport logic і спростити unit testing через fake/mock,Щоб змішати business logic з HTTP,Щоб уникнути interfaces,B
+Що таке FastAPI?,Реляційна СУБД,Сучасний Python web framework для побудови APIs,Тільки ASGI server,HTTP client library,B
+Що FastAPI використовує для parsing і validation?,Git metadata,Тільки SQL schemas,Python type hints та Pydantic models,Лише HTML forms,C
+Що FastAPI генерує автоматично?,OpenAPI schema та інтерактивну документацію,API tokens,Database migrations,TLS certificates,A
+Який ASGI server наведено як приклад для FastAPI?,Uvicorn,Pydantic,Requests,SQLite,A
+Як створити мінімальний FastAPI application object?,app = requests.Session(),app = BaseModel(),app = httpx.Client(),app = FastAPI(),D
+Для чого route decorator на кшталт @app.get('/')?,Для HTTP client retry,Для створення database table,Для реєстрації route operation,Для environment variable,C
+Для чого опція Uvicorn --reload?,Для production security,Для Pydantic serialization,Для rate limiting,"Для development auto-reload, не для production",D
+Як FastAPI обробляє path parameter з type hint int?,Завжди залишає str,Парсить і валідовує його як int,Перетворює на JSON array,Ігнорує type hint,B
+Як у FastAPI зазвичай визначають query parameters?,Тільки через HTTP headers,"Як параметри endpoint-функції, яких немає у path і які не є body models",Через URL fragment,Лише через global variables,B
+Для чого fastapi.Query?,Для декларативної validation query parameters,Для JSON serialization,Для SQL SELECT,Для connection pooling,A
+Що таке Pydantic BaseModel?,HTTP status class,ASGI server,База для моделей structured data з типами та validation rules,Database driver,C
+Як FastAPI отримує JSON request body у Pydantic model?,Через response_model,"Читає body, валідовує його і передає Python object",Через URL fragment,Тільки через headers,B
+Для чого Pydantic Field?,Для SQL JOIN,Для constraints і metadata полів,Для route versioning,Для HTTP connection pool,B
+Який constraint Field(gt=0) задає для числа?,Значення має бути рядком,Значення має дорівнювати нулю,Поле стає optional,Значення має бути більше нуля,D
+Для чого EmailStr?,Для HTTP status,Для спеціалізованої валідації email-адреси,Для connection timeout,Для route path,B
+Для чого field_validator у Pydantic v2?,Для model-level validation кількох полів,Для створення HTTP client,Для запуску Uvicorn,Для власної validation logic окремого поля,D
+Коли застосовують model_validator?,Тільки для одного query parameter,Для SQL injection,Для HTTP headers,Коли правило залежить від кількох fields або моделі загалом,D
+Для чого response_model у FastAPI?,Для CORS,Для фіксації public response contract і фільтрації зайвих полів,Для connection pooling,Для встановлення request timeout,B
+Який success status доречно оголосити для створення ресурсу?,201 Created,404 Not Found,422 Validation Error,503 Service Unavailable,A
+Для чого FastAPI HTTPException?,Для Pydantic Field,Для запуску server,Для представлення очікуваних API errors з status code і detail,Для network client pooling,C
+Чому не слід повертати HTTP 200 для кожної помилки?,Status code є частиною API contract і має відображати результат операції,Бо 200 заборонений FastAPI,Бо всі помилки мають бути 500,Бо JSON не підтримує errors,A
+Для чого Depends у FastAPI?,Для декларативного dependency injection,Для HTTP redirects,Для URL fragments,Для SQL serialization,A
+Для чого APIRouter?,Для розділення routes на modules у великому application,Для HTTP client retry,Для створення API token,Для Pydantic validation,A
+Які шари пропонується розділяти у FastAPI project?,URL і TLS,"Routes, schemas, services та infrastructure",Тільки GET і POST,JSON і Python,B
+Що означає CRUD API?,Тільки GET endpoints,Тільки authentication,Лише database backup,"Операції створення, читання, зміни та видалення ресурсів",D

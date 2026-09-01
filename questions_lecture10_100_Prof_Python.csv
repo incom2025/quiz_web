@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що таке база даних за лекцією?,Тільки набір Python-класів,Організована сукупність даних,Мова програмування для SQL,Файл виключно формату CSV,B
+Яку роль виконує СУБД?,Лише компілює Python,Тільки створює HTML,Виконує лише сортування списків,"Забезпечує зберігання, пошук, конкурентний доступ, транзакції та контроль цілісності",D
+Як реляційна модель представляє дані?,Лише як Python-словники,Тільки як графічні файли,Виключно як JSON,"У вигляді таблиць, пов'язаних ключами",D
+Що являє собою рядок реляційної таблиці?,Конкретний запис,Індекс Python-списку,Назву бази,Атрибут сутності,A
+Що являє собою стовпець таблиці?,Атрибут сутності,Connection pool,Транзакцію,Окрему СУБД,A
+Що визначає схема бази даних?,Тільки назву файла,Тільки SQL SELECT,"Структуру таблиць, типи даних, constraints та relationships",Лише пароль користувача,C
+Для чого PRIMARY KEY?,Для створення transaction pool,Для однозначної ідентифікації рядка,Для підключення до PostgreSQL,Для сортування всіх таблиць,B
+Для чого FOREIGN KEY?,Для виконання rollback,Для заміни PRIMARY KEY,Для шифрування даних,Для посилання на ключ іншої таблиці та підтримки referential integrity,D
+Що означає referential integrity?,Форматування результатів SELECT,Узгодженість посилань між пов'язаними таблицями,Автоматичне кешування SQL,Зберігання паролів,B
+Які команди належать до DDL?,"BEGIN, COMMIT, ROLLBACK","INSERT, UPDATE, DELETE","CREATE, ALTER, DROP","SELECT, FETCH, PRINT",C
+Які команди належать до DML за лекцією?,"INSERT, UPDATE, DELETE","CREATE, ALTER, DROP","SELECT, JOIN, GROUP","BEGIN, COMMIT, ROLLBACK",A
+Яка команда використовується для отримання даних?,ALTER,SELECT,DROP,ROLLBACK,B
+Які команди належать до transaction control?,"SELECT, WHERE, LIMIT","INSERT, UPDATE, DELETE","BEGIN, COMMIT, ROLLBACK","CREATE, DROP, ALTER",C
+Для чого constraint NOT NULL?,Щоб виконати JOIN,Щоб створити індекс,Щоб зробити стовпець PRIMARY KEY автоматично,Щоб заборонити NULL у відповідному стовпці,D
+Для чого UNIQUE constraint?,Щоб видалити дублікати під час SELECT,Щоб почати транзакцію,Щоб дозволити лише NULL,Щоб вимагати унікальності значень відповідного поля,D
+Для чого CHECK constraint?,Для створення connection,Для вимкнення rollback,Для перевірки Python syntax,Для фіксації допустимої умови для значень на рівні БД,D
+Що робить INSERT?,Повертає всі рядки,Видаляє таблицю,Створює індекс,Додає нові рядки до таблиці,D
+Для чого WHERE у SELECT?,Для сортування,Для фільтрації рядків,Для створення таблиці,Для завершення транзакції,B
+Для чого ORDER BY?,Для фільтрації агрегованих груп,Для rollback,Для вставки рядків,Для визначення порядку результатів,D
+Для чого LIMIT?,Для зміни типу колонки,Для створення FOREIGN KEY,Для обмеження кількості рядків результату,Для commit,C
+Чому UPDATE без WHERE може бути небезпечним?,Він автоматично виконує rollback,Може змінити всі рядки таблиці,Він завжди створює нову таблицю,Він не підтримується SQL,B
+Чому DELETE без WHERE може бути небезпечним?,Може видалити всі рядки таблиці,Створює duplicate,Видаляє лише один випадковий рядок,Не виконується в SQL,A
+Які агрегатні функції наведено в лекції?,"JOIN, WHERE, LIMIT","COUNT, SUM, AVG, MIN, MAX","CREATE, DROP, ALTER","COMMIT, SAVEPOINT, ROLLBACK",B
+Для чого GROUP BY?,Для формування груп рядків перед агрегуванням,Для створення connection pool,Для сортування Python-об'єктів,Для видалення таблиць,A
+Чим HAVING відрізняється від WHERE у контексті лекції?,Різниці немає,WHERE працює лише після COMMIT,HAVING фільтрує вже агреговані групи,HAVING створює таблиці,C
+Що робить INNER JOIN?,Створює індекс,Повертає відповідні пари рядків із пов'язаних таблиць,Завжди зберігає всі рядки лівої таблиці,Видаляє дублікати,B
+Що робить LEFT JOIN?,Змінює schema,"Зберігає всі рядки лівої таблиці, додаючи відповідні дані правої",Виконує rollback,Повертає лише рядки без відповідностей,B
+Для чого використовують database index?,Для прискорення певних пошуків і сортування,Для заміни FOREIGN KEY,Для автоматичного commit,Для шифрування паролів,A
+Яку ціну має індекс?,Не має жодної вартості,Він завжди зменшує розмір БД,Він забороняє SELECT,Додаткова пам'ять і вартість INSERT/UPDATE/DELETE,D
+Від чого слід відштовхуватися при створенні індексів?,Від версії pytest,Від кількості Python-функцій,Від реальних query patterns,Лише від назви таблиці,C
+Що задає Python DB-API 2.0?,Формат JSON для БД,"Спільну модель для database drivers: connection, cursor, execute, fetch, commit, rollback",Єдиний SQL dialect для всіх СУБД,ORM SQLAlchemy,B
+Чи однаковий placeholder syntax у всіх DB-API драйверах?,Placeholder не підтримуються,"Так, завжди використовується %s","Ні, він може відрізнятися","Так, завжди використовується ?",C
+Що таке SQLite?,Вбудована file-based реляційна СУБД,Серверний HTTP framework,NoSQL cloud service,Тільки Python ORM,A
+Який Python-модуль для SQLite входить до стандартної бібліотеки?,sqlite3,alembic,psycopg,sqlalchemy,A
+Для яких сценаріїв SQLite особливо зручна?,Тільки глобальні високонавантажені кластери,"Навчання, локальні програми, прототипи та embedded-сценарії",Виключно браузерні програми,Лише machine learning,B
+Як створити SQLite database у пам'яті?,sqlite3.memory(),connect('RAM'),sqlite3.connect(None),sqlite3.connect(':memory:'),D
+Для чого contextlib.closing у прикладі з sqlite3?,Для явного закриття connection,Для автоматичного створення таблиць,Для parameter binding,Для виконання SELECT,A
+Що представляє Cursor?,Connection pool,Контекст виконання SQL і читання результатів,Файл бази даних,ORM model,B
+Чи дозволяє sqlite3 виконувати execute безпосередньо на connection?,Тільки через SQLAlchemy,"Ні, cursor завжди обов'язковий","Так, для простих випадків",Лише в PostgreSQL,C
+Що таке параметризований SQL-запит?,"Запит, у якому SQL-код відокремлено від переданих значень",SELECT без WHERE,Запит без параметрів,"Запит, побудований тільки через f-string",A
+Який placeholder style показано для sqlite3?,Тільки $1,Лише {},Знак ? або named style,Тільки %s,C
+Чому f-string із недовіреними значеннями у SQL небезпечний?,Він завжди повільніший за ORM,Python не підтримує f-string,Він вимикає indexes,Може дозволити змінити структуру SQL і спричинити SQL injection,D
+Чи є ручне escaping надійною заміною параметризованих запитів?,Лише для PostgreSQL,"Так, завжди",Ні,Тільки для SELECT,C
+Для чого призначена параметризація SQL?,Для будь-яких SQL identifiers,"Для значень (values), а не назв таблиць чи колонок",Тільки для назв таблиць,Лише для ORDER BY identifiers,B
+Як безпечно працювати з динамічною назвою колонки?,Зберігати в password,Передавати як звичайний ? parameter,Перевіряти її через whitelist або спеціальний API драйвера/toolkit,Безумовно вставляти через f-string,C
+Для чого executemany?,Для rollback savepoint,Для читання одного рядка,Для пакетної передачі багатьох наборів параметрів,Для створення index,C
+Що робить fetchone()?,Закриває cursor,Читає один рядок результату,Фіксований блок рядків,Усі рядки,B
+Що робить fetchmany()?,Створює таблицю,Читає блок рядків,Усі рядки без обмежень,Тільки один рядок,B
+Що робить fetchall()?,Читає всі залишкові рядки,Лише перший рядок,Повертає connection,Виконує commit,A
+Чому fetchall може бути проблемним для великого result set?,Він не підтримує SELECT,Може використати багато пам'яті,Він видаляє дані,Він автоматично блокує таблицю назавжди,B
+Для чого sqlite3.Row?,"Щоб звертатися до колонок за іменами, а не лише індексами",Для connection pooling,Для створення ORM relationships,Для migration scripts,A
+Навіщо ізолювати database access у repository/data access layer?,Щоб уникнути всіх integration tests,Щоб не використовувати constraints,Щоб виконувати commit після кожного методу,Щоб відділити SQL і persistence details від бізнес-логіки,D
+Що таке транзакція?,Назва connection pool,"Логічна одиниця роботи, яка повністю фіксується або відміняється",Тип індексу,Один SELECT без контексту,B
+Що означає Atomicity в ACID?,Дані завжди зберігаються у RAM,"Усі зміни транзакції або фіксуються, або відміняються",Кожен SELECT має index,Усі таблиці мають PRIMARY KEY,B
+Що означає Consistency в ACID?,Транзакція переводить БД між допустимими станами,Усі дані дублюються,Кожна транзакція працює одна,Commit не потрібен,A
+Що означає Isolation в ACID?,Транзакція не використовує БД,Конкурентні транзакції мають контрольований взаємний вплив,Кожна таблиця має окремий файл,Всі connections заборонені,B
+Що означає Durability в ACID?,Дані існують лише до закриття cursor,Rollback завжди скасовує commit,SELECT автоматично створює backup,Зафіксовані зміни зберігаються відповідно до гарантій СУБД,D
+Що робить commit?,Створює savepoint,Відміняє незакомічені зміни,Видаляє connection,Підтверджує транзакцію,D
+Що робить rollback?,Виконує SELECT,Відміняє незакомічені зміни поточної транзакції,Створює індекс,Фіксує зміни,B
+Чому дві частини переказу коштів мають бути в одній транзакції?,Щоб використовувати fetchall,Щоб при відмові другої операції перша не залишилася зафіксованою,Щоб збільшити OFFSET,Щоб уникнути PRIMARY KEY,B
+Де бажано визначати transaction boundary?,У кожному SELECT,Тільки всередині ORM model,У кожному repository method окремо,"На рівні use case/service, який знає повну бізнес-операцію",D
+Чому commit усередині кожного repository method може бути проблемою?,Може зруйнувати атомарність складного use case,Він заборонений Python,Він автоматично викликає DROP,Він вимикає SQLAlchemy,A
+Що таке savepoint?,Connection string,Тип index,Окрема database schema,Проміжна точка всередині транзакції для часткового rollback,D
+Що дозволяє ROLLBACK TO savepoint?,Завершити транзакцію назавжди,Відкотити частину роботи без повного rollback транзакції,Створити таблицю,Видалити savepoint без відкату,B
+Які механізми можуть використовувати СУБД для конкурентності?,Тільки Python GIL,Тільки pytest fixtures,Лише CSV locks,"Locks, MVCC та isolation mechanisms",D
+Яка сильна сторона SQLite?,Не потребує окремого server process і проста в deployment,Потребує складного server setup,Завжди має розподілений cluster,Найкраща для будь-якої високої конкурентності записів,A
+Коли часто обирають server-based СУБД замість SQLite?,Лише для unit tests,"Для високої конкурентності записів, складної серверної інфраструктури та масштабування",Для одного локального файла завжди,Коли не потрібні транзакції,B
+Що таке PostgreSQL?,Файловий формат,Тільки ORM,Серверна реляційна СУБД з розвиненими production-можливостями,Вбудований модуль Python,C
+Які можливості PostgreSQL згадано в лекції?,Лише Python bytecode,Тільки файлове зберігання,Тільки CSV export,"Транзакції, MVCC, типи, індекси, constraints і JSON capabilities",D
+Які дані зазвичай містить PostgreSQL connection string?,Лише SQL query,Тільки Python version,"Host, port, database, user і password",Тільки table name,C
+Чому database credentials не слід hardcode у source code?,Через ризик витоку секретів і складність безпечної конфігурації,Бо SQLAlchemy видаляє credentials,Бо Python забороняє рядки,Бо PostgreSQL не підтримує паролі,A
+Який сучасний драйвер PostgreSQL згадано в лекції?,pathlib,sqlite3,psycopg,pytest,C
+Який placeholder показано в прикладі psycopg 3?,{},@p,?,%s,D
+Де краще зберігати database credentials?,У назві таблиці,У відкритому source code,В environment variables або secret management,У SQL-коментарях,C
+Що не слід робити з database password у логах?,Валідовувати наявність параметра,Логувати його,Зберігати поза source code,Передавати через secret management,B
+Що таке connection pooling?,Об'єднання таблиць через JOIN,Повторне використання database connections замість створення нового для кожної дрібної операції,Створення багатьох паролів,Кешування SELECT результатів у list,B
+Чому connection pool корисний для server-based database?,Він створює indexes автоматично,Він замінює транзакції,Створення нового server connection може бути дорогим,Він усуває SQL injection,C
+Що важливо при поверненні connection у pool?,Не залишати транзакційний стан між незалежними запитами,Зберігати connection глобально назавжди,Залишати незавершену транзакцію,Ніколи не закривати cursor,A
+Яка архітектура SQLite за порівняльною таблицею?,Embedded/file,Distributed-only,Browser-only,Client-server,A
+Яка архітектура PostgreSQL?,Embedded/file,In-memory only,Без server process,Client-server,D
+Що таке ORM?,Тільки connection pool,SQL injection detector,Object-Relational Mapping між таблицями/relationships та Python-класами й об'єктами,Формат backup,C
+Чи усуває ORM потребу розуміти SQL?,"Так, повністю","Так, якщо coverage 100%",Лише в PostgreSQL,Ні,D
+Яка перевага ORM?,Гарантія відсутності N+1,"Декларативні моделі, composable queries, relationships та unit-of-work patterns",Відсутність транзакцій,Автоматична оптимізація будь-якого SQL,B
+Який ризик ORM згадано в лекції?,ORM не підтримує CRUD,"Може приховувати дорогі запити, N+1 і неочікувані transaction boundaries",ORM забороняє indexes,ORM не працює з PostgreSQL,B
+Що повинен уміти аналізувати професійний розробник при використанні ORM?,Generated SQL,Лише назви класів,Тільки Python docstring,Тільки requirements.txt,A
+Які два основні рівні має SQLAlchemy?,SQLite і PostgreSQL,DDL і DML,SQL Expression Language/Core і ORM,pytest і unittest,C
+Що додає SQLAlchemy ORM поверх Core?,HTTP server,"Mapping класів, Session та relationships",Лише CSV parser,Python compiler,B
+Який стиль запитів активно використовується в SQLAlchemy 2.x?,Виключно stored procedures,select() і context managers,Лише session.query() як єдиний варіант,Тільки raw f-string SQL,B
+Чи входить SQLAlchemy до стандартної бібліотеки Python?,Лише Core,Так,Тільки ORM,"Ні, це стороння бібліотека",D
+Що таке Engine у SQLAlchemy?,Mapped ORM object,Центральний об'єкт для взаємодії з database dialect і connection pool,Migration script,Тільки SQL table,B
+Що зберігає MetaData у SQLAlchemy Core?,Паролі,Поточну транзакцію користувача,Coverage report,Опис database schema,D
+Що описує Table у SQLAlchemy Core?,Тільки ORM Session,Python fixture,Connection pool,Таблицю декларативно,D
+Що робить metadata.create_all(engine)?,Видаляє всі таблиці,"Створює описані таблиці, якщо потрібно",Створює PostgreSQL server,Виконує production migrations повністю,B
+Як SQLAlchemy Core передає values при INSERT?,Окремо від параметризованого SQL expression,Через небезпечний f-string,Тільки через globals,У назві таблиці,A
+Що повертає/створює select() у SQLAlchemy Core?,Connection pool,Migration,Composable SQL expression,Нову database,C
+Які елементи використовує typed declarative mapping SQLAlchemy 2.x?,"DeclarativeBase, Mapped і mapped_column","TestCase, Mock і patch","Cursor, fetchall і pytest","Path, JSON і CSV",A
+Для чого DeclarativeBase?,Для створення базового класу declarative ORM mappings,Для connection pooling,Для SQL injection,Для виконання rollback,A
+Що означає Mapped[int] у typed ORM model?,Типізований mapped attribute,Database password,Звичайний список,Fixture scope,A
+Для чого mapped_column?,Для JOIN без таблиць,Для декларативного опису mapped database column,Для створення pytest marker,Для environment variables,B
+Що таке Session у SQLAlchemy ORM?,Тільки database URL,Python module loader,Один SQL index,Unit-of-work і transaction-oriented workspace для mapped objects,D

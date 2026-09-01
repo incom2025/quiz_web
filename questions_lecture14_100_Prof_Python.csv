@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що означає продуктивність Python-програми?,Тільки обсяг RAM,"Сукупність характеристик, зокрема latency, throughput, CPU, memory, I/O та scalability",Лише швидкість одного циклу,Тільки кількість рядків коду,B
+Яке головне правило оптимізації сформульовано в лекції?,Спочатку переписати все на NumPy,Завжди додавати cache,Завжди замінювати list на generator,"Спочатку вимірювати, а не оптимізувати наосліп",D
+Що таке bottleneck?,Найкоротша функція програми,Будь-який generator,Тільки нестача RAM,"Компонент, який обмежує загальну продуктивність системи",D
+"Чому оптимізація Python loop, що займає 2% часу, може майже не допомогти?","Якщо основний bottleneck знаходиться в іншому місці, наприклад у database query",Бо 2% автоматично означає memory leak,Бо database завжди швидша,Бо Python loops неможливо оптимізувати,A
+Що таке latency?,Час виконання однієї операції,Кількість CPU cores,Обсяг пам'яті процесу,Кількість операцій за секунду,A
+Що таке throughput?,Час CPU лише одного function call,Peak memory,Кількість операцій за одиницю часу,Час однієї операції,C
+Чи завжди покращення latency покращує throughput?,Тільки при caching,Ні,Тільки в NumPy,"Так, завжди",B
+Що включає elapsed або wall-clock time?,Лише network latency,Тільки garbage collection,Тільки час активного CPU,"Увесь фактичний час, включно з очікуванням I/O",D
+Що відображає CPU time?,Лише час disk I/O,"Час, коли процес фактично використовував CPU",Увесь elapsed time,Кількість виконаних функцій,B
+Для чого time.perf_counter()?,Для сортування profiler report,Для вимірювання shallow memory,Для високоточного монотонного вимірювання elapsed duration,Для кешування функцій,C
+Чому одного вимірювання часу недостатньо?,"На результат впливають warm-up, scheduler, caches, background load та інші коливання",perf_counter працює лише двічі,Один запуск не виконує код,Python завжди повертає випадковий час,A
+Для чого призначений модуль timeit?,Для NumPy broadcasting,Для microbenchmark невеликих фрагментів Python-коду,Для memory profiling,Для database indexing,B
+"Що робить timeit.timeit(..., number=10000)?",Вимірює 10000 MB пам'яті,Автоматично профілює всі функції,Багаторазово виконує вимірюваний код,Створює 10000 processes,C
+Що повертає timeit.repeat()?,Тільки середнє значення,Список allocations,Один profiler snapshot,Кілька незалежних вимірювань benchmark,D
+Що часто аналізують у результатах microbenchmark repeat?,Лише кількість рядків,Тільки максимальний memory footprint,Тільки перший запуск,Найкращий результат або розподіл вимірювань,D
+Для чого setup у timeit?,Щоб створити cache,Щоб визначити dtype,Щоб увімкнути cProfile,"Щоб відокремити підготовку даних від вимірюваної операції, якщо setup не є частиною workload",D
+Яка перевага передачі callable у timeit?,Callable не виконується,Callable автоматично векторизується,Callable вимірює RAM,Це часто простіше і надійніше за рядок коду,D
+Чому microbenchmark може бути оманливим?,timeit завжди неточний,"Synthetic test може не відображати реальні дані, I/O, allocations і framework overhead",Microbenchmark не запускає Python,Він вимірює тільки NumPy,B
+Що таке profiling?,Тільки вимірювання розміру list,Заміна loops на comprehensions,Кешування результатів,"Аналіз того, де саме програма витрачає час",D
+Для чого cProfile?,Для створення ndarray,Для серіалізації,Для deterministic profiling викликів функцій та їх тривалості,Для вимірювання network throughput напряму,C
+Як профілювати script через командний рядок?,cProfile.start(program.py),python -m cProfile program.py,python -m timeit --memory program.py,python profile import program.py,B
+Як відсортувати cProfile output за cumulative time з командного рядка?,python -m cProfile -s cumulative program.py,python -m timeit -s cumulative program.py,python -m cProfile -s memory program.py,python -m pstats -o cumulative program.py,A
+Що означає ncalls у cProfile?,Кількість CPU cores,Кількість викликів функції,Peak memory,Кількість cache misses,B
+Що означає tottime у cProfile?,Час усередині самої функції без дочірніх викликів,Wall-clock усієї програми,Час функції разом з усіма підфункціями,Число викликів,A
+Що означає cumtime у cProfile?,Кількість allocations,Розмір об'єкта,"Час функції разом із функціями, які вона викликала",Тільки власний час функції,C
+Про що може свідчити високий tottime?,У програмі memory leak,Сама функція виконує багато роботи,Функція тільки викликає дорогі підфункції,Функція не викликається,B
+Про що може свідчити високий cumtime при невисокому tottime?,Вона має O(1),Функція є orchestration point і викликає дорогі підфункції,Вона використовує лише set,Функція не виконує жодного виклику,B
+Для чого pstats.Stats?,"Для сортування, фільтрації та друку profiler statistics",Для створення generators,Для кешування properties,Для NumPy reductions,A
+Навіщо зберігати cProfile результат у profile.prof?,Щоб автоматично оптимізувати bottleneck,Щоб перетворити програму на compiled code,Щоб зменшити RAM,"Щоб пізніше аналізувати його, наприклад через pstats",D
+Чому потрібно профілювати representative workload?,Щоб уникнути всіх fluctuations,Щоб cProfile працював тільки з великими даними,"Щоб профіль відповідав реальним розмірам даних, cache state, I/O та конфігурації",Щоб вимкнути garbage collection,C
+Чому пам'ять є частиною performance?,Memory footprint дорівнює latency,"Великий footprint може погіршувати cache locality, викликати swapping і обмежувати workers",RAM не впливає на performance,Пам'ять важлива лише для NumPy,B
+Що показує sys.getsizeof()?,Кількість references,Peak RSS процесу,Shallow size конкретного Python object,Повний recursive size всього object graph,C
+Чому sys.getsizeof(list) не показує повну пам'ять усіх даних?,"List містить references на окремі objects, розміри яких не включаються рекурсивно",getsizeof працює тільки зі strings,Python objects завжди мають однаковий розмір,List не займає пам'яті,A
+Чим generator відрізняється від list за пам'яттю?,Generator створює значення поступово і може мати значно менший peak memory,Generator не може обчислювати значення,Generator завжди зберігає всі елементи,List завжди lazy,A
+Коли streaming особливо корисний?,Тільки для малих tuple,"Для великих файлів або result sets, які можна обробляти поступово",Тільки для cached_property,Лише для sorting,B
+Для чого tracemalloc?,Для вимірювання CPU cores,Для SQL profiling,Для NumPy dtype conversion,Для відстеження Python memory allocations,D
+Що повертає tracemalloc.get_traced_memory()?,Поточний і peak обсяг відстежуваної Python memory,Latency і throughput,Hits і misses cache,tottime і cumtime,A
+Для чого tracemalloc.take_snapshot()?,Для очищення cache,"Для отримання snapshot allocations, який можна аналізувати за місцем створення",Для копіювання ndarray,Для збереження cProfile,B
+Чи кожне зростання RSS означає класичний memory leak?,Тільки якщо є NumPy,"Так, завжди",Ні,Тільки в CPython,C
+Що може спричиняти зростання memory крім класичного leak?,"Retained references, caches, allocator behavior або native libraries",Лише sorted(),Виключно perf_counter,Тільки syntax errors,A
+Чому алгоритмічна оптимізація часто важливіша за micro-optimization?,Micro-optimization завжди дає лінійний speedup,Алгоритм не впливає на CPU,Зміна O(n²) на O(n log n) або O(n) може дати значно більший виграш,Big-O не впливає на великі дані,C
+Що описує Big-O?,Точний час у секундах,Розмір Python object у bytes,Кількість cache hits,Асимптотичне зростання вартості алгоритму зі збільшенням input size,D
+Яка середня складність membership test у set/dict зазначена в лекції?,O(n log n) завжди,O(n²),Близька до O(1),O(2^n),C
+Яка типова складність membership test у list?,O(1),O(n),O(n²) для одного пошуку,O(log n) гарантовано,B
+Як оптимізувати repeated membership у великому blocked_list?,Застосувати cached_property,Перетворити set назад у list у кожній ітерації,Попередньо перетворити blocked_list на set,Використати більше вкладених циклів,C
+Для чого dict може використовуватися як індекс?,Для broadcasting,Для профілювання функцій,Для швидкого пошуку object за key замість повторного linear scan,Для вимірювання elapsed time,C
+Який алгоритм сортування використовує Python sorted за лекцією?,"Quick sort, написаний користувачем",Timsort,Selection sort,Bubble sort,B
+Чому не варто писати власний quadratic sorting algorithm для production?,sorted працює тільки з NumPy,Python sorted уже використовує високоефективний алгоритм,Quadratic sorting завжди O(1),Python не дозволяє власні algorithms,B
+Для чого параметр key у sorted?,Щоб обчислити ключ сортування для елементів,Щоб кешувати sorted назавжди,Щоб виміряти cumtime,Щоб визначити dtype,A
+"Чому built-ins sum, min, max, any, all часто кращі за ручні loops?",Вони не виконують Python-код,Вони часто ефективно реалізовані та роблять код коротшим,Вони завжди мають O(1),Вони автоматично використовують GPU,B
+Яка перевага list comprehension для простих перетворень?,Вона часто швидша за append-loop і має компактну зрозумілу семантику,Вона не створює list,Вона завжди lazy,Вона змінює Big-O будь-якого алгоритму,A
+Чому локальні micro-optimizations мають межу?,Python забороняє локальні оптимізації,Вони працюють тільки з strings,Вони завжди зменшують correctness,"Вони не усунуть dominant bottleneck на кшталт O(n²), network call або database query",D
+Що слід зробити з invariant expression усередині великого циклу?,Зберігати тільки у list,"Обчислити його один раз поза циклом, якщо semantics дозволяє",Перетворити на network call,Обчислювати двічі в кожній ітерації,B
+Що таке early exit?,Очищення cache перед кожною операцією,"Припинення подальшої роботи, коли результат уже відомий",Копіювання ndarray,Повторний запуск benchmark,B
+Які конструкції можуть реалізувати early exit?,"any, all, return або break",Лише tracemalloc,Тільки cProfile,Тільки lru_cache,A
+Чому batching може покращити I/O performance?,Збільшує кількість network calls,Зменшує кількість дорогих round trips,Вимикає throughput,Завжди збільшує latency,B
+Що таке N+1 queries?,Тип NumPy broadcasting,Один batch query,Схема lru_cache,"Один запит отримує список, після чого окремий запит виконується для кожного елемента",D
+Що таке векторизація?,Кешування будь-якої функції,Створення Python list із vectors,Профілювання через cProfile,Заміна Python-level циклу операцією над масивом у optimized native code,D
+Що таке NumPy ndarray?,Необмежений cache,Однорідний багатовимірний масив із компактним memory layout,Профайлер,Неоднорідний Python dict,B
+Чим ndarray відрізняється від Python list у контексті лекції?,ndarray не має dtype,"ndarray зазвичай зберігає однорідні значення компактно, а list — references на Python objects",List підтримує тільки числа,List завжди компактніший,B
+Чому NumPy часто швидший для великих чисельних arrays?,Python loops автоматично перетворюються на C,NumPy завжди використовує network,NumPy не виконує арифметику,Основний цикл виконується у compiled/native code,D
+Що таке NumPy ufunc?,Функція для element-wise операцій у native code,User-defined profiler,Тип cache key,Process scheduler,A
+Які приклади ufunc наведено?,"cProfile, pstats, timeit","cache, lru_cache, property","len, open, print","np.sqrt, np.exp, np.sin",D
+Що таке NumPy reduction?,Копіювання кожного елемента,"Агрегація масиву, наприклад sum, mean, min або max",Створення Python thread,Сортування cProfile,B
+Для чого boolean mask у NumPy?,Для memory profiling,Для зміни dtype profiler report,Для cache invalidation,Для умовного відбору або зміни елементів масиву,D
+Що таке broadcasting?,Механізм операцій над arrays сумісних shapes без явного копіювання меншого operand,Кешування NumPy arrays,Паралельний cProfile,Автоматичний network broadcast,A
+Як NumPy порівнює shapes для broadcasting?,За кількістю bytes,Справа наліво,Зліва направо без винятків,За dtype names,B
+Коли dimensions сумісні для broadcasting?,Коли одна dimension завжди більша за 100,Лише коли dimensions різні,Коли вони рівні або одна з них дорівнює 1,Тільки коли обидві дорівнюють 0,C
+Який ризик неправильного broadcasting?,Вимкнення NumPy,Перетворення ndarray у generator,Автоматичний memory leak завжди,Помилка або неочікувано великий intermediate array,D
+Що часто повертає NumPy slicing?,Python generator,lru_cache,View на ту саму memory,Завжди незалежну copy,C
+Який наслідок зміни NumPy view?,Може змінитися original array,Змінюється тільки dtype,View автоматично видаляється,Original ніколи не змінюється,A
+Коли слід використати .copy()?,Для cProfile sorting,Коли потрібен view,Коли потрібна незалежна memory,Для вимірювання latency,C
+Чому contiguous memory може бути швидшою?,Вимикає allocations,Не використовує RAM,Завжди зменшує Big-O до O(1),Краще використовує CPU caches і native/SIMD kernels,D
+Як dtype впливає на memory?,dtype впливає лише на назву array,dtype не впливає на memory,"Менший dtype може зменшити обсяг raw data, наприклад float32 проти float64",float64 завжди займає менше,C
+Чому не можна бездумно зменшувати precision?,float32 не підтримує arithmetic,Це може порушити correctness задачі,NumPy забороняє float32,Precision не пов'язана з результатом,B
+Що показує ndarray.nbytes?,Кількість elements,Обсяг raw array data без загального Python-object overhead,Кількість allocations tracemalloc,Повний RSS процесу,B
+Що таке temporary array?,Generator expression,Незмінний cache,"Проміжний масив, створений під час ланцюжка array operations",Тип profiler,C
+Чи гарантує vectorization мінімальне використання пам'яті?,Ні,Тільки з np.vectorize,"Так, завжди",Тільки з float64,A
+Коли in-place operations можуть бути корисні?,Коли допустима зміна array і потрібно зменшити allocations,Для збільшення temporary arrays,Для cProfile,Коли original array не можна змінювати,A
+Чому np.vectorize не слід вважати справжньою low-level vectorization?,Він завжди компілює функцію в machine code,Він працює тільки з strings,Він є memory profiler,Це переважно convenience wrapper і він не усуває Python callback cost,D
+Що таке кешування?,Завжди streaming,Видалення всіх результатів,Збереження результату дорогої операції для повторного використання,Профілювання CPU,C
+Коли caching особливо ефективний?,Коли кожен input унікальний і cache безмежний,Коли функція дуже дешева,Коли результат змінюється щомілісекунди без invalidation,"Коли однакові inputs повторюються, обчислення дороге, а результат достатньо стабільний",D
+Для чого functools.cache?,Для bounded LRU тільки,Для необмеженого memoization cache функції з hashable arguments,Для NumPy broadcasting,Для profiling,B
+Для чого lru_cache(maxsize=N)?,Для необмеженого зберігання всіх keys,Для обмеженого cache з видаленням least recently used entries,Для sorting,Для disk streaming,B
+Що показує cache_info()?,"Hits, misses, maxsize і current size cache",current і peak tracemalloc,tottime і cumtime,shape і dtype,A
+Для чого cache_clear()?,Для збільшення maxsize,Для перетворення cache на generator,"Для очищення cached results, зокрема після зміни underlying data",Для вимірювання CPU,C
+Яка вимога до arguments cached function?,Вони повинні бути NumPy arrays,Вони повинні бути hashable,Вони повинні бути mutable lists,Вони мають бути тільки floats,B
+Чому mutable list або dict не можна безпосередньо використати як cache key?,Вони мають O(1),Вони не є hashable,Вони автоматично очищають cache,Вони завжди занадто малі,B
+Який trade-off має caching?,Обмін throughput на dtype,Обмін CPU на syntax,Обмін correctness на profiling,Обмін memory на speed,D
+Чому необмежений cache може шкодити?,Cache ніколи не використовує memory,Велика кількість keys може створити memory problem,Він автоматично видаляє всі entries,Він вимикає CPU,B
+Що таке cache invalidation?,Сортування profiler output,Створення нового ndarray,Перехід від list до set,"Визначення моменту, коли cached result більше не актуальний",D
+Які стратегії invalidation згадані?,Тільки perf_counter,Лише sys.getsizeof,Тільки np.sqrt,"TTL, version key або explicit invalidation",D
+Що потрібно враховувати при caching database/API reads?,Лише Python version,"Freshness, authorization boundaries, consistency і failure behavior",Тільки dtype,Тільки назву функції,B
+Для чого functools.cached_property?,Щоб обчислити attribute при першому доступі та зберегти результат в instance,Щоб профілювати property,Щоб створити global cache для всіх objects,Щоб зробити attribute generator,A
+Який перший крок системного пошуку bottleneck?,Додати lru_cache,Змінити всі lists на sets,Визначити performance requirement,Одразу переписати код,C
+Що слід зробити після baseline у системному алгоритмі оптимізації?,Профілювати і знайти dominant cost,Видалити benchmark,Додати threads автоматично,Зменшити precision без аналізу,A
+Що слід зробити після внесення оптимізації?,Повторно виміряти та перевірити correctness і memory,Вважати speedup гарантованим,Не запускати profiler знову,Видалити baseline,A
+Які стратегії доречні при network/database bottleneck?,"Менше round trips, batching, pooling, indexes, caching, concurrency і timeouts",Тільки __slots__,Тільки заміна for на comprehension,Тільки np.vectorize,A
+Навіщо профілювати до і після оптимізації?,Щоб змінити dtype,"Щоб мати доказ ефекту і перевірити, чи bottleneck не перемістився",Щоб збільшити cache,Щоб уникнути correctness tests,B
+Що таке performance regression?,Покращення latency,Cache hit,Зменшення memory,Погіршення продуктивності в новій версії коду,D

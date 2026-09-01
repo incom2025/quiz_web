@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що означає Production Python у лекції?,Тільки використання Docker,"Сукупність інженерних практик для відтворюваності, тестованості, конфігурованості, безпечного розгортання та супроводу",Окрема версія Python для серверів,Лише оптимізація швидкості,B
+Чим production-проєкт зазвичай відрізняється від одиночного .py скрипта?,Завжди складається лише з одного файла,Не містить тестів,Не потребує правил запуску,"Має package structure, tests, configuration, dependency metadata, documentation і CI workflow",D
+Що таке src-layout?,Структура без package,Розміщення tests усередині Docker image,Зберігання dependencies у README,"Структура, де importable package розміщений під каталогом src",D
+Яку проблему допомагає зменшити src-layout?,Випадковий імпорт source tree замість реально встановленого package,Відсутність CI,Помилки Docker port mapping,Витік secrets у Git,A
+Що таке Python package?,"Модульна одиниця, яку можна імпортувати",GitHub Actions workflow,Файл requirements.txt,Тільки Docker image,A
+Що охоплює packaging?,Тільки написання README,Лише створення virtual environment,"Опис, побудову, встановлення та поширення source code як distribution",Тільки запуск pytest,C
+Для чого pyproject.toml?,Для зберігання production secrets,"Для build-system metadata, project metadata та налаштувань інструментів",Лише для Git history,Тільки для Docker configuration,B
+Що таке build backend?,Тип virtual environment,HTTP endpoint,Система логування,Реалізація стандартного інтерфейсу побудови distribution artifacts,D
+Який приклад build backend наведено в лекції?,docker.build,setuptools.build_meta,pytest.main,os.environ,B
+Що може входити до project metadata?,Лише список tests,Тільки пароль до БД,"Назва, версія, опис, Python requirement, dependencies, authors, license та entry points",Тільки Docker ports,C
+Що означає MAJOR у semantic versioning?,Несумісні зміни,Сумісні виправлення,Зміна лише README,Сумісна нова функціональність,A
+Що означає MINOR у semantic versioning?,Видалення package metadata,Сумісна нова функціональність,Несумісні зміни,Тільки security patch,B
+Що означає PATCH у semantic versioning?,Нова major architecture,Зміна Python interpreter,Сумісні виправлення,Несумісний API redesign,C
+Що таке wheel?,Git branch,Docker layer,Файл із environment variables,Built distribution у форматі .whl,D
+Яка перевага wheel для pure Python package?,Не потребує Python,Автоматично запускає CI,Завжди містить production secrets,Зазвичай встановлюється без build stage на машині користувача,D
+Що таке source distribution?,Virtual environment,Coverage report,Runtime container,"Архів source package і metadata, з якого можна побудувати wheel",D
+Яка команда створює wheel і sdist через build frontend?,python -m pytest build,python -m venv dist,docker run build,python -m build,D
+У якому каталозі зазвичай з'являються distribution artifacts після python -m build?,src,dist,tests,.venv,B
+Що означає editable install?,Package стає read-only,Package працює лише в Docker,Dependencies видаляються,"Package встановлений так, що source changes доступні без повторної інсталяції",D
+Яка команда виконує editable install локального package?,python -m build -e,pip freeze -e .,python -m pip install -e .,docker install -e .,C
+Для чого [project.scripts] у pyproject.toml?,Для coverage threshold,Для оголошення command-line entry points,Для зберігання secrets,Для Docker layers,B
+Що охоплює dependency management?,"Declaration, resolution, installation, isolation, pinning, updates і security review",Лише створення requirements.txt,Тільки pip install,Тільки оновлення Python,A
+Навіщо virtual environment?,Для заміни Docker registry,Для ізоляції packages конкретного проєкту від глобального Python environment,Для створення GitHub repository,Для зберігання API keys,B
+Яка команда створює virtual environment .venv?,python -m venv .venv,python -m build .venv,python -m pip .venv,docker venv .venv,A
+Чому в лекції рекомендується запускати pip як python -m pip?,Щоб приховати dependencies,Щоб створити wheel автоматично,Щоб явно використовувати pip конкретного interpreter/environment,Щоб pip працював без internet,C
+Що таке direct dependency?,Docker base image,"Бібліотека, яку явно потребує ваш код","Бібліотека, потрібна лише іншій dependency",Будь-який файл у src,B
+Що таке transitive dependency?,CI job,"Dependency, потрібна іншій бібліотеці",Файл .env,"Бібліотека, імпортована напряму вашим кодом",B
+Чому важливо розуміти transitive dependencies?,Вони також впливають на compatibility та security updates,Вони завжди безпечні,Вони потрібні лише для README,Вони не встановлюються,A
+Який ризик надто широкого version constraint?,Docker не підтримуватиме ports,Package ніколи не оновиться,Virtual environment не створиться,Несподівана несумісність після оновлення dependency,D
+Чому надто жорстке pinning у reusable library може бути проблемою?,Вимикає packaging,Завжди видаляє transitive dependencies,Може ускладнити інтеграцію з іншими packages,Забороняє unit tests,C
+Що означає lock-підхід?,Docker health check,Фіксацію відтворюваного набору resolved dependency versions,Заборону будь-яких updates назавжди,Шифрування source code,B
+Яку роль може мати requirements.txt?,Сховище secrets,Файл лише для README,"Installation requirements, зокрема exact pins для deployment environment",Повна заміна project metadata в усіх випадках,C
+Чому сліпий pip freeze може бути недостатнім?,"Може містити зайві transitive packages і не показує, які dependencies direct",Працює тільки в Docker,Завжди видаляє versions,Не показує жодної package,A
+Що таке dev dependency?,"Інструмент для development/CI, який не обов'язково потрібний runtime application",Docker container,Будь-яка production database,Runtime secret,A
+Які приклади dev dependencies наведено?,FastAPI і database URL,pytest і ruff,Docker і Git,os і sys,B
+Як слід оновлювати dependencies?,Ніколи не оновлювати,Завжди брати latest без перевірки,Видаляти tests перед update,"Контрольовано, з запуском tests",D
+Що таке supply-chain risk у контексті dependencies?,Ризик від використання зовнішнього коду та ненадійних packages/actions,Тільки повільний internet,Неправильний README heading,Відсутність Docker port,A
+Яка базова рекомендація щодо кількості dependencies?,Не перевіряти джерело,Мінімізувати непотрібні packages,Додавати якомога більше libraries,Встановлювати випадкові packages,B
+Чому configuration слід зберігати поза кодом?,Щоб Docker не мав CMD,Щоб tests не запускалися,Щоб параметри середовища змінювалися без копій source code,Щоб приховати package metadata,C
+Що таке environment variable?,"Key/value, доступний процесу через операційну систему",Docker image layer,Wheel metadata,Python class,A
+Як Python читає environment variables?,Через pytest.raises,Через pathlib лише,Через os.environ або os.getenv,Через cProfile,C
+"Що робить os.environ['KEY'], якщо required variable відсутня?",Повертає None завжди,Створює variable,Запускає Docker,Піднімає KeyError,D
+"Для чого зручний os.getenv('KEY', default)?",Для package build,Для обов'язкового fail без default,Для optional settings із default value,Для GitHub checkout,C
+Що означає fail-fast configuration?,Ігнорувати missing settings,Завершити startup з чіткою помилкою при критично неправильній конфігурації,Запустити application частково,Використати випадкове значення,B
+Навіщо формувати typed Settings object?,Щоб створити Docker registry,Щоб зберігати passwords у коді,Щоб прочитати configuration на boundary і не розкидати os.getenv по business logic,Щоб замінити tests,C
+Що вважається secret?,Public health endpoint,README title,"Пароль, API key, private token або signing key",Package version,C
+Де не слід зберігати secrets?,У runtime environment за policy,У source code та Git commit history,У захищеному deployment mechanism,У спеціалізованому secret store,B
+Для чого .env.example?,Будувати wheel,Показати назви потрібних variables без реальних secret values,Замінити .gitignore,Зберігати production passwords,B
+Що слід зробити з реальним .env?,Не комітити його до repository,Обов'язково додати в Git,Публікувати в README,Копіювати в Docker image,A
+Для чого .gitignore?,Щоб будувати package,"Щоб не комітити local environments, caches, secrets і build artifacts",Щоб запускати CI,Щоб визначати Python version,B
+"Які environments можуть мати різні URLs, credentials і logging levels?","Development, test і production",Тільки development,Тільки production,Лише Docker build,A
+Що має залишатися максимально однаковим між environments?,Database URLs,Secret values,Credentials,Application code,D
+Для чого Docker?,Для зберігання passwords,Для упаковки application разом із runtime environment у image,Тільки для тестування syntax,Для заміни Git,B
+Що таке Docker image?,GitHub job,Immutable template filesystem/configuration,Virtual environment activation,Runtime instance image,B
+Що таке Docker container?,Runtime instance image з процесом і runtime settings,Built Python wheel,Тільки Dockerfile,Package metadata,A
+Для чого Dockerfile?,Для запуску pytest fixtures,Для опису кроків побудови Docker image,Для semantic versioning,Для Git commit history,B
+Що визначає FROM у Dockerfile?,Runtime command,Working directory,Port mapping,Base image,D
+Для чого WORKDIR?,Копіює secrets,Визначає base image,Створює CI matrix,Встановлює робочий каталог для наступних instructions і runtime command,D
+Що робить COPY у Dockerfile?,Видаляє package,Додає файли з build context до image,Створює Git tag,Запускає container,B
+Що робить RUN у Dockerfile?,Запускає GitHub Actions,Виконує команду під час image build і створює layer,Створює README,Задає лише runtime command,B
+Що задає CMD у Dockerfile?,Build context,Package version,Base image,Default command контейнера,D
+Чому exec-form JSON для CMD часто кращий?,Краще передає signals application process,Автоматично шифрує secrets,Встановлює dependencies,Створює volume,A
+Яка команда будує Docker image з поточного context?,pip build docker,python -m docker build,docker run -t student-project .,docker build -t student-project:0.1.0 .,D
+Яка команда запускає container з image?,docker build,docker run,python -m build,git run,B
+Для чого port mapping -p 8000:8000?,Для встановлення Python version,Для package versioning,Для GitHub secrets,Для відображення host port на container port,D
+Чому secret не слід записувати в Dockerfile через ENV або COPY?,Він може залишитися в image history/layers,ENV працює тільки локально,Secret автоматично видаляє image,Docker не підтримує ENV,A
+Для чого .dockerignore?,Щоб зберігати Docker passwords,Щоб зменшити build context і не передавати непотрібні/чутливі файли,Щоб запускати container,Щоб створювати wheel,B
+Як порядок COPY може впливати на Docker build?,Змінює semantic version,Визначає Git branch,Впливає на reuse layer cache,Не впливає взагалі,C
+Чому dependency metadata часто копіюють до source code в Dockerfile?,Щоб не встановлювати package,Щоб запускати tests без Python,Щоб приховати dependencies,Щоб краще використовувати layer cache при змінах source,D
+Яким має бути production Docker image?,З local .venv і IDE files,З усіма credentials,"Відтворюваним, мінімальним і лише з потрібними runtime artifacts",Максимально великим,C
+Чому container бажано запускати non-root?,Щоб зменшити привілеї та security impact,Щоб збільшити Docker layers,Щоб створити wheel,Щоб прискорити Python syntax,A
+Для чого health endpoint?,Для GitHub checkout,Для зберігання secrets,"Щоб platform могла визначити, чи service готовий приймати traffic",Для package metadata,C
+Чому container filesystem не слід вважати persistent storage?,Docker не підтримує files,Container не має disk,Filesystem завжди read-only,"Container є ephemeral runtime, а дані потребують volumes або зовнішнього storage",D
+Куди зазвичай пишуть logs у containerized application?,У wheel metadata,У Git history,У stdout/stderr,У pyproject.toml,C
+Що таке Continuous Integration?,Ручне тестування перед релізом,Часте інтегрування змін з автоматичними перевірками,Автоматичний production deployment кожного commit,Тільки Docker build,B
+Що таке Continuous Delivery?,Відсутність CI,"Перевірена версія завжди готова до релізу, але deployment може потребувати approval",Тільки створення README,Кожна зміна автоматично йде у production,B
+Що таке Continuous Deployment?,Package installation у .venv,Лише підготовка artifact без deployment,Автоматичне розгортання успішних змін у production,Ручний запуск tests,C
+Що таке CI/CD pipeline?,Послідовність автоматизованих stages,Environment variable,Python package class,Docker port,A
+Яка типова послідовність pipeline наведена?,checkout → setup → install → lint → test → build → security checks → publish/deploy,README → .env → root container,freeze → uninstall → ignore,deploy → delete tests → commit secrets,A
+Чому CI важливий для reproducibility?,CI працює лише на ноутбуці автора,CI замінює source control,CI приховує dependencies,Перевіряє проєкт поза локальним environment автора,D
+Що таке GitHub Actions?,Docker registry format,Python build backend,Система автоматизації workflow у GitHub repository,Virtual environment,C
+Де зберігаються GitHub Actions workflow files?,У src/myapp,У dist,У .venv,У .github/workflows,D
+Що означає on у GitHub Actions workflow?,Назву package,"Events, які запускають workflow",Docker command,Runner OS,B
+Що таке job у GitHub Actions?,Один Python function,Незалежна одиниця роботи workflow,Environment secret,Package dependency,B
+Що таке step у job?,Послідовна action або shell command усередині job,Docker image,Окремий repository,Semantic version,A
+Для чого actions/checkout?,Щоб встановити Python,Щоб створити Docker port,Щоб отримати repository content на runner,Щоб прочитати secrets із source,C
+Для чого actions/setup-python?,Щоб зберігати artifacts,Щоб встановити потрібну версію Python на runner,Щоб створити README,Щоб запускати Docker daemon,B
+Що таке matrix testing?,Package version matrix у README,Запуск tests на кількох Python versions або operating systems,Тільки coverage report,Запуск одного test один раз,B
+Навіщо lint stage?,Щоб зберігати secrets,Щоб розгортати production,Щоб створювати environment variables,"Щоб автоматично знаходити частину style, correctness і quality issues",D
+Як tests стають quality gate у CI?,Tests завжди ігноруються,Failure завершує job ненульовим exit code і блокує успішний pipeline,CI видаляє failed tests,pytest повертає нуль при будь-якій помилці,B
+Як coverage слід трактувати в CI?,Як заміну tests,Як єдину метрику correctness,Як deployment secret,"Як signal, а не гарантію якості",D
+Для чого build stage у CI?,Щоб видалити pyproject.toml,Щоб вимкнути lint,Щоб створити production password,"Щоб перевірити, що package реально збирається",D
+Що таке workflow artifact?,Docker base image,Збережений build output або report для аналізу чи релізу,Python exception,Environment variable,B
+Як слід зберігати deployment credentials у GitHub Actions?,"В encrypted secrets/variables, не у відкритому YAML",У README,У source code,У Dockerfile COPY,A
+Що означає principle of least privilege?,Не використовувати permissions,Зберігати root credentials у YAML,Надавати token/identity лише мінімально необхідні permissions,Надавати admin права всім jobs,C
+Чому third-party GitHub Actions потребують review?,Це виконуваний сторонній код із supply-chain ризиком,Вони не виконують код,Вони не мають доступу до workflow,Вони завжди офіційні,A
+Що має означати green pipeline?,"Критичні перевірки, визначені policy, успішно пройдені",Лише виконано echo,Docker image має зелений колір,У repository немає README,A
+Яка мета README?,"Дати новій людині змогу зрозуміти, встановити, налаштувати, запустити і протестувати проєкт",Замінити tests,Зберігати API tokens,Замінити pyproject.toml,A
+Якими мають бути команди в README?,Тільки псевдокодом,Copy-paste friendly і відповідати реальному repository,Умовними і неперевіреними,З hard-coded secrets,B
+Що повинна пояснювати docstring?,Кожен очевидний рядок коду,Docker layer cache,Git history,"Публічний контракт, parameters, return value, exceptions і важливі side effects",D

@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Яка головна роль автоматизованих тестів у життєвому циклі ПЗ?,Повністю замінювати code review,Давати швидкий зворотний зв'язок про поведінку програми та зменшувати ризик регресій,Гарантувати абсолютну відсутність помилок,Автоматично виправляти дефекти,B
+Чи доводить успішний набір тестів абсолютну відсутність помилок?,"Так, якщо всі тести зелені","Так, якщо coverage 100%",Лише для unit tests,"Ні, тести перевіряють конкретні властивості у визначених сценаріях",D
+Що перевіряє unit test?,Систему як ціле,Тільки взаємодію з реальною БД,Бізнес-вимоги лише очима замовника,Невелику одиницю поведінки в максимальній ізоляції,D
+Що перевіряє integration test?,Взаємодію кількох реальних компонентів,Виключно UI,Лише синтаксис Python,Тільки одну функцію без залежностей,A
+Що перевіряє system/E2E test?,Систему як ціле,Лише fixture,Один mock,Тільки приватний метод,A
+Що перевіряє acceptance test?,Лише внутрішні методи,Роботу pytest discovery,Бізнес-вимоги з погляду користувача або замовника,Тільки statement coverage,C
+Яка типова форма піраміди тестування?,Тільки integration tests,"Багато unit tests, менше integration tests і ще менше дорогих E2E tests",Однакова кількість усіх тестів,"Найбільше E2E, найменше unit",B
+Чи є піраміда тестування математичним законом?,Лише для web-проєктів,"Так, але лише для pytest","Так, її пропорції фіксовані","Ні, це практична модель балансу швидкості, вартості та реалістичності",D
+Яка властивість характерна для якісного тесту?,Випадкова залежність від мережі,Детермінованість,Залежність від порядку запуску,Відсутність assertions,B
+Від чого якісний тест не повинен залежати?,Від вхідних даних,Від публічного контракту,Від порядку запуску інших тестів,Від очікуваного результату,C
+Що означає Arrange у структурі Arrange–Act–Assert?,Підготовку вхідних даних і залежностей,Виконання дії,Завершення pytest,Перевірку результату,A
+Що означає Act у Arrange–Act–Assert?,Реєстрацію marker,Виконання тестованої дії,Підготовку fixtures,Перевірку результату,B
+Що означає Assert у Arrange–Act–Assert?,Запуск функції без перевірки,Встановлення pytest,Перевірку отриманого результату або поведінки,Створення даних,C
+Що рекомендується тестувати unit test-ом?,Очевидну поведінку list.append,Сам Python,Кожну приватну змінну,"Публічний контракт компонента, а не внутрішню реалізацію",D
+Який модуль unit testing входить до стандартної бібліотеки Python?,pytest-cov,hypothesis,pytest,unittest,D
+Який базовий клас використовується в unittest для тестових класів?,unittest.Mock,TestFixture,pytest.Test,unittest.TestCase,D
+Яка особливість pytest підкреслена в лекції?,pytest не підтримує fixtures,Усі тести мають бути класами TestCase,pytest не має discovery,Тести можна писати як звичайні функції з Python assert,D
+За якою convention pytest знаходить типові тестові файли?,Тільки *.test,За назвами на кшталт test_*.py,Лише main.py,За будь-якими файлами без правил,B
+Як за convention зазвичай називаються тестові функції pytest?,check_*,assert_*,run_*,test_*,D
+Де зазвичай розміщують тести в Python-проєкті?,Тільки всередині site-packages,Лише в pyproject.toml,В окремому каталозі tests,У каталозі __pycache__,C
+Якою командою можна запустити pytest з кореня проєкту?,unittest pytest,pytest,python test,pip pytest,B
+Що робить pytest -q?,Запускає pytest у більш стислому режимі виводу,Запускає лише slow tests,Зупиняє після першої помилки,Показує максимальну деталізацію,A
+Що робить pytest -v?,Вимикає assertions,Вмикає детальніший verbose-вивід,Запускає лише один тест,Показує тільки coverage,B
+Як запустити конкретну функцію test_add у tests/test_math.py?,pytest tests/test_math.py::test_add,python test_add tests/test_math.py,pytest test_add::tests/test_math.py,pytest --function test_add.py,A
+Чому звичайний assert зручний у pytest?,assert створює fixture,assert завжди ігнорується,pytest переписує assert і формує інформативну діагностику при невідповідності,assert автоматично виправляє код,C
+Для чого pytest.approx?,Для створення mocks,Для наближеного порівняння чисел з floating-point похибкою,Для порівняння рядків без регістру,Для перевірки exceptions,B
+Чому 0.1 + 0.2 інколи недоречно порівнювати з 0.3 через ==?,Через branch coverage,Через особливості floating-point представлення,Через fixture scope,Через pytest discovery,B
+Для чого pytest.raises?,"Для перевірки, що код породжує очікуваний exception",Для приховування всіх помилок,Для вимірювання coverage,Для створення exception,A
+Що дозволяє параметр match у pytest.raises?,Створити marker,Змінити тип exception,Запустити mock,Перевірити текст повідомлення exception,D
+Що таке boundary-value analysis?,Пошук лише happy path,Вимірювання швидкості тестів,Системний вибір тестів біля меж допустимих значень,Побудова mock API,C
+Які значення доцільно перевірити для допустимого score 0..100?,Лише випадкові числа,"Наприклад -1, 0, 100 і 101",Тільки 50,Тільки 0 і 1,B
+Що таке fixture у pytest?,Команда запуску pytest,Тільки mock-функція,Керована тестова залежність або підготовлений стан,Тип coverage,C
+Як pytest передає fixture у тест?,За ім'ям параметра тестової функції,Через import fixture вручну,Через return з pytest.main,Через глобальну змінну обов'язково,A
+Що робить код до yield у yield-fixture?,Setup ресурсу,Assertion,Teardown,Coverage report,A
+Що робить код після yield у yield-fixture?,Discovery,Teardown або cleanup ресурсу,Parametrization,Mock creation,B
+Які fixture scopes наведено в лекції?,"local, global, static","unit, integration, E2E","small, medium, large","function, class, module, package, session",D
+Який ризик ширшого fixture scope?,Зростає ризик спільного mutable state між тестами,Fixture створюється частіше,Неможливо виконати teardown,pytest перестає бачити fixture,A
+Який scope fixture зазвичай створює її для кожного тесту?,module,function,session,package,B
+Для чого conftest.py?,Для реалізації mocks тільки,Для production-коду,"Для спільних fixtures та pytest-конфігурації, яку pytest знаходить автоматично",Для зберігання coverage HTML,C
+Чи потрібно звичайно імпортувати conftest.py у кожний тестовий модуль?,"Ні, pytest знаходить його автоматично",Лише через import *,Тільки в integration tests,"Так, завжди",A
+Що надає вбудована fixture tmp_path?,Mock файлової системи без реальних файлів,Шлях до pyproject.toml,Унікальний тимчасовий каталог як pathlib.Path,Постійну production-директорію,C
+Чому tmp_path безпечніший за фіксований файл у робочому каталозі?,Завжди працює швидше за RAM,Не потребує cleanup ніколи за жодних умов,Автоматично mock-ає pathlib,Зменшує конфлікти й ізолює файлові дані тесту,D
+Для чого monkeypatch?,Для створення SQLite,Для обчислення coverage,"Для тимчасової зміни атрибутів, environment variables, словників або current directory",Для параметризації,C
+Що відбувається зі змінами monkeypatch після тесту?,Вони залишаються назавжди,pytest автоматично відновлює стан,Вони записуються у pyproject.toml,Python завершується,B
+Для чого @pytest.mark.parametrize?,Для coverage branch,Для створення fixture scope,Для запуску одного тесту з кількома наборами параметрів,Для mocking namespace,C
+Яка перевага parametrized tests?,Виконуються лише один раз,Завжди замінюють integration tests,Зменшують дублювання і явно показують таблицю сценаріїв,Не потребують assertions,C
+Для яких сценаріїв параметризація особливо зручна?,Тільки для mocks,Для equivalence classes і boundary values,Лише для session fixtures,Тільки для мережі,B
+Для чого ids у pytest.mark.parametrize?,Для patch namespace,Для зрозуміліших назв сценаріїв у звіті,Для створення database ID,Для зміни expected value,B
+Для чого pytest markers?,Для класифікації та вибіркового запуску тестів,Для заміни assert,Для створення mocks,Для серіалізації fixtures,A
+Які приклади markers наведено в лекції?,unit_test_case_only,"slow, integration, network","red, green, blue","json, csv, pickle",B
+Як запустити лише тести з marker integration?,pytest -m integration,pytest integration.py,pytest --integration-only-file,pytest -k marker,A
+Як виключити slow tests через marker expression?,pytest --no-slow-marker-file,pytest -x slow,"pytest -m ""remove slow""","pytest -m ""not slow""",D
+Де бажано реєструвати власні pytest markers?,У __init__.py обов'язково,У конфігурації проєкту,У production database,Тільки в кожній тестовій функції,B
+Де в лекції показано централізовану конфігурацію pytest?,У README.md,У pyproject.toml,У setup.py обов'язково,У requirements.txt тільки,B
+Що таке mock у загальному сенсі?,"Test double, що замінює залежність контрольованою поведінкою та може перевіряти взаємодії",Тип fixture scope,Реальна production-база,Coverage report,A
+Коли mock особливо корисний?,Коли треба перевірити list.append,"Коли реальна залежність повільна, нестабільна, дорога або має небажаний side effect",Коли залежностей немає,Для заміни всіх assertions,B
+Який ризик надмірного mocking?,pytest не запускається,Тести автоматично стають integration,Coverage завжди падає до нуля,Тести стають прив'язаними до внутрішньої реалізації,D
+Що таке dummy test double?,"Об'єкт, що записує виклики",Повна in-memory реалізація,Об'єкт з очікуваннями взаємодій,"Об'єкт-заповнювач, поведінка якого не використовується",D
+Що таке stub?,Системний тест,"Test double, що повертає заздалегідь визначені відповіді",Об'єкт лише для запису викликів,Обов'язково реальна БД,B
+Що таке fake?,Тільки функція assert,"Спрощена, але робоча реалізація, наприклад in-memory repository",Coverage plugin,Об'єкт без поведінки,B
+Що таке spy?,Реальна production-залежність,Fixture з session scope,Завжди повертає лише константу,"Test double, що записує факти викликів",D
+Що дозволяє unittest.mock.Mock?,Задавати поведінку та перевіряти інформацію про виклики,Запускати coverage без plugin,Створювати SQLite-файл,Автоматично робити dependency injection,A
+Для чого assert_called_once_with?,Створити fixture,Перевірити exception message,Перевірити branch coverage,"Перевірити, що mock було викликано рівно один раз з конкретними аргументами",D
+Для чого side_effect у Mock?,Для зміни fixture scope,Для моделювання exception або послідовності відповідей,Для реєстрації marker,Для запуску pytest-cov,B
+Що може моделювати client.get.side_effect = TimeoutError('timeout')?,Успішний HTTP-виклик завжди,Зміну cwd,Створення fake repository,Відмову залежності через TimeoutError,D
+Для чого unittest.mock.patch?,"Для тимчасової заміни об'єкта у namespace, де код під тестом його шукає",Для створення tmp_path,Для параметризації,Для вимірювання statement coverage,A
+Де потрібно patch-ити залежність?,У conftest.py незалежно від імпорту,У місці її використання кодом під тестом,Завжди лише в місці первинного визначення,У pyproject.toml,B
+Для чого autospec?,Щоб створити random seed,Щоб збільшити coverage,Щоб mock відповідав специфікації реального API і його сигнатурам,Щоб автоматично створити E2E test,C
+Яку проблему зменшує autospec?,Низький branch coverage автоматично,Відсутність tmp_path,Flaky tests через час,Ризик використання в тесті неіснуючого методу або неправильної сигнатури,D
+Чому fake repository іноді читабельніший за складний mock?,Він не зберігає стан,Він замінює integration tests,Він реалізує реальну семантику в пам'яті та менше прив'язує тест до викликів,Він завжди використовує production DB,C
+Як dependency injection покращує тестованість?,Дозволяє явно передавати залежності та легко замінювати їх у тестах,Вимагає session fixtures,Забороняє mocks,Змушує створювати залежності всередині функції,A
+Що перевіряє state-based testing?,Тільки порядок імпортів,Тільки кількість викликів collaborators,Результат або зміну стану,Лише coverage,C
+Що перевіряє interaction-based testing?,Лише SQLite schema,Тільки random seed,Тільки кінцевий стан без взаємодій,Виклики та взаємодії з collaborators,D
+Що за можливості рекомендується тестувати?,Саму реалізацію сторонніх бібліотек,Кожний приватний виклик,Observable behavior без фіксації зайвих внутрішніх деталей,Тільки mocks,C
+Що показує code coverage?,Якість assertions напряму,Які частини коду виконувалися під час тестів,Що код гарантовано правильний,Кількість знайдених bugs,B
+Чи гарантує високий coverage якісні assertions?,Лише при 100%,Ні,"Так, якщо використано pytest","Так, завжди",B
+Для чого pytest-cov?,Для TDD,Для mocking,Для інтеграції coverage.py з pytest,Для створення fixtures,C
+Яка команда показує непокриті рядки в terminal coverage report?,pytest --cov=app --cov-report=term-missing,pytest --tb=coverage,pytest --missing-only,pytest -m coverage,A
+Що вимірює statement coverage?,Чи виконувався конкретний executable statement,Чи виконані всі можливі значення параметрів,Чи всі mocks викликані,Чи перевірені всі бізнес-вимоги,A
+Що враховує branch coverage?,Лише кількість рядків,Тільки fixtures,Лише імпорти,"Альтернативні результати умов, наприклад True і False гілки",D
+"Чому coverage слід розглядати як сигнал, а не як самоціль?",Coverage не працює з Python,Coverage завжди неточний,Високе число може бути отримане слабкими тестами без змістовних перевірок,Coverage вимірює лише швидкість,C
+Що важливіше за механічну максимізацію coverage?,Покриття тільки import-рядків,Кількість fixtures,Кількість mocks,"Покриття критичної поведінки, failure paths, boundaries і складної логіки",D
+Що перевіряє integration test repository з реальною тестовою БД?,Тільки Mock API,Реальну взаємодію repository з persistence mechanism,Тільки pytest discovery,Лише приватні методи,B
+Яку БД використано в прикладі integration test лекції?,PostgreSQL production,SQLite,Redis,MongoDB,B
+Як ізолювати integration tests з БД?,"Використовувати temporary databases, transactions, cleanup або окремі test containers",Не очищати дані,Ділити одну mutable production БД між усіма тестами,Залежати від порядку тестів,A
+Для чого tmp_path корисний в integration test файлової системи?,Для mocking усіх файлових операцій,Для підключення публічної мережі,Для реального читання/запису в ізольованому тимчасовому каталозі,Для coverage HTML,C
+Чому unit tests не повинні випадково залежати від публічної мережі?,Тому що unit tests завжди мають session scope,"Результат може залежати від DNS, latency, availability і rate limits",pytest забороняє HTTP синтаксично,Мережа не підтримує Python,B
+Що таке flaky test?,Лише slow test,"Тест, який іноді проходить, а іноді падає без зміни коду",Тест без assert,"Тест, який завжди падає",B
+Яка типова причина flaky tests?,Використання tmp_path,Використання pytest.approx,Наявність asserts,"Shared state, час, race conditions, мережа, випадковість або порядок виконання",D
+"Що рекомендується робити з random seed, якщо це відповідає задачі?",Змінювати після кожного assert,Фіксувати його для відтворюваності,Зберігати лише у mock,Ніколи не контролювати випадковість,B
+Чому не рекомендується довільний sleep для синхронізації тестів?,Він автоматично змінює coverage,sleep заборонений Python,Він створює fixture,Він може робити тести повільними та нестабільними,D
+"Як краще тестувати код, що залежить від поточного часу?",Використовувати реальний час і sleep,Завжди patch-ити весь datetime модуль у всіх місцях,Ігнорувати created_at,Передати clock як залежність або test double,D
+Як краще контролювати випадковість у unit test?,Повторювати тест до успіху,Передати генератор або функцію випадковості як залежність,Видалити assert,Покладатися на випадковий результат,B
+Що таке TDD?,"Підхід, у якому короткий цикл розробки починається з тесту нової поведінки",Тільки техніка coverage,Тип integration test,Plugin pytest,A
+Що означає Red у TDD?,Виконується refactor,Створюється coverage HTML,Новий тест падає з правильної причини,Усі тести проходять,C
+Що означає Green у TDD?,Мінімальна реалізація робить тест успішним,Тест обов'язково падає,Виконується тільки mocking,Видаляються tests,A
+Що означає Refactor у TDD?,Покращення структури без зміни зовнішньої поведінки при зелених тестах,Додавання випадкових features,Заміна unit tests на E2E,Видалення assertions,A
+Чи означає TDD написати сотні тестів наперед?,"Ні, TDD працює короткими ітераціями",Лише для integration tests,"Так, це головна вимога",Тільки при 100% coverage,A
+Що можна додавати після базового TDD-сценарію?,Лише session fixtures,"Наступні edge cases, наприклад порожній рядок або Unicode",Тільки mocks,Тільки E2E,B
+Що перевіряє unit test OrderService з mocks у лекції?,Реальну production БД,Лише dataclass syntax,Публічний SMTP сервер,Валідацію та взаємодії без реальної БД і email service,D

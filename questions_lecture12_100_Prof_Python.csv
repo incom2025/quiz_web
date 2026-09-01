@@ -1,0 +1,101 @@
+﻿Question,A,B,C,D,Prav_vid
+Що характерно для синхронного виконання програми?,Event loop автоматично створює Tasks,Наступна операція зазвичай починається після завершення попередньої,Усі операції завжди виконуються на різних ядрах,Кожна функція обов'язково є coroutine,B
+Що таке I/O-bound задача?,"Задача, що завжди максимально завантажує CPU",Тільки математичний цикл без I/O,Будь-яка функція з return,"Задача, яка значну частину часу очікує мережу, файл, БД або інший зовнішній ресурс",D
+Чому async особливо корисний для I/O-bound операцій?,Він автоматично додає CPU cores,Він усуває всі network errors,Він робить будь-який код паралельним,Під час очікування однієї операції event loop може виконувати інші готові задачі,D
+Який типовий підхід наведено для CPU-bound задач?,"Процеси, native code або спеціалізовані бібліотеки",Тільки asyncio.Queue,Лише AsyncClient,Тільки asyncio.sleep,A
+Що означає concurrency?,Просування кількох задач у перекривних часових інтервалах,Завжди використання multiprocessing,Тільки послідовне виконання,Обов'язкове одночасне виконання на різних CPU cores,A
+Що означає parallelism?,Створення coroutine object,Послідовний await,Фактичне одночасне виконання на різних обчислювальних ресурсах,Лише чергування coroutines в одному event loop,C
+Чи гарантує asyncio parallelism на кількох ядрах?,Лише для asyncio.sleep,"Ні, asyncio насамперед є моделлю конкурентності","Так, якщо використано await","Так, для кожної Task",B
+Що відбувається з async function у точці await?,Вона блокує event loop назавжди,Вона автоматично переходить у новий process,Вона завершує Python process,"Вона може добровільно призупинитися, дозволивши loop виконати інші готові tasks",D
+Що означає cooperative multitasking в asyncio?,Усі coroutines працюють у різних процесах,Перемикання між coroutines відбувається у визначених точках await,Операційна система примусово перемикає coroutine після кожного рядка,Tasks не можуть призупинятися,B
+"Що станеться, якщо coroutine довго виконує CPU-код без await?",Вона стане async generator,Event loop автоматично перенесе її в process,Вона блокуватиме event loop і затримуватиме інші tasks,"Нічого, asyncio завжди перериває CPU-код",C
+Що створює async def?,Coroutine function,Task object,ProcessPoolExecutor,Thread,A
+Що повертає виклик async function?,Event loop,Coroutine object,Готовий результат функції завжди,Thread object,B
+Чи виконується тіло async function до кінця одразу при її звичайному виклику?,Тільки якщо є return,Лише в FastAPI,"Ні, створюється coroutine object","Так, завжди",C
+Що таке coroutine object?,HTTP response,Threading lock,Звичайний list,"Awaitable object, який потрібно await-ити або передати event loop",D
+Що робить await?,Блокує всі threads,Закриває event loop,Створює новий process,Очікує awaitable і дозволяє coroutine призупинитися,D
+Чим asyncio.sleep відрізняється від time.sleep в async-коді?,asyncio.sleep блокує весь process,Між ними немає різниці,time.sleep є awaitable,asyncio.sleep не блокує event loop,D
+Що робить time.sleep усередині coroutine?,Автоматично викликає to_thread,Створює Task,Дозволяє іншим tasks виконуватися,Блокує поточний thread і event loop,D
+Що таке event loop?,Database connection pool,Центральний scheduler-механізм asyncio,HTTP server framework,Python compiler,B
+Що відстежує event loop?,Тільки CPU temperature,Тільки HTTP status codes,Лише файли Python,"Готові tasks, timers та I/O events",D
+Для чого asyncio.run()?,Для створення thread pool лише,Для запуску SQLAlchemy,Для запуску top-level coroutine та керування життєвим циклом event loop,Для створення Semaphore,C
+Що робить asyncio.run() після завершення main coroutine?,Перезапускає main,Завершує async generators і закриває loop,Залишає loop відкритим назавжди,Створює background process,B
+Чому два послідовні await не обов'язково дають concurrency?,"Якщо A повністю очікується до запуску B, операції залишаються послідовними",Тому що await працює тільки з files,await завжди виконує tasks паралельно,Тому що asyncio не підтримує кілька operations,A
+Що таке asyncio Task?,Окремий OS process,"Обгортка coroutine, запланована для виконання в event loop",Звичайний dict,Database transaction,B
+Для чого asyncio.create_task()?,Щоб запланувати coroutine та дозволити конкурентне виконання,Щоб виконати blocking sleep,Щоб створити новий CPU core,Щоб створити Queue item,A
+Чому важливо зберігати посилання на Tasks?,Щоб вимкнути event loop,Щоб перетворити Task на thread,"Щоб контролювати lifecycle, exceptions, очікування та cancellation",Бо без посилання Task ніколи не стартує за жодних умов,C
+Чому неконтрольовані fire-and-forget tasks небажані?,Вони не можуть породжувати exceptions,"Ускладнюють обробку exceptions, cancellation і завершення",Вони завжди працюють швидше,Вони автоматично стають processes,B
+Що робить asyncio.gather()?,Запускає multiprocessing,Конкурентно очікує кілька awaitables і повертає результати в порядку аргументів,Створює Semaphore,Повертає результати тільки в порядку завершення,B
+У якому порядку gather повертає результати?,У порядку переданих awaitables,Тільки в порядку фактичного завершення,За алфавітом,У випадковому порядку,A
+Для чого return_exceptions=True у gather?,Щоб перетворити errors на warnings,Щоб усі помилки ігнорувалися назавжди,Щоб автоматично retry-ити operations,Щоб exceptions стали елементами результату для окремої обробки caller-ом,D
+Що таке structured concurrency?,Паралельність тільки через threads,Запуск необмежених background tasks,"Модель, де дочірні tasks мають чіткий scope і lifecycle, пов'язаний із батьківською операцією",Виконання лише однієї coroutine,C
+Для чого asyncio.TaskGroup?,Для створення HTTP headers,Для структурованого створення й очікування групи tasks,Для блокування event loop,Для запуску CPU-bound code на GPU,B
+"Що робить TaskGroup, якщо одна task завершується з необробленою помилкою?",Завжди завершує інші tasks успішно,Автоматично повторює task безмежно,Скасовує інші tasks групи та агрегує помилки,Ігнорує помилку,C
+Що таке ExceptionGroup?,Механізм Python для представлення кількох exceptions разом,Async lock,Thread pool,Тип HTTP timeout,A
+Який синтаксис пов'язаний з обробкою ExceptionGroup?,except*,await except,except async,catch*,A
+Для чого asyncio.timeout?,Для прискорення CPU-коду,Для встановлення часової межі async block,Для створення TaskGroup,Для блокування cancellation,B
+Який exception очікується при перевищенні asyncio.timeout у прикладі лекції?,KeyError,ImportError,StopIteration,TimeoutError,D
+Для чого asyncio.wait_for()?,Для обмеження часу очікування одного awaitable,Для створення Queue,Для блокування event loop,Для запуску кількох processes,A
+Що робить Task.cancel()?,Перетворює task на thread,Запитує скасування task,Негайно завершує весь process,Закриває всі event loops,B
+Як cancellation зазвичай проявляється всередині coroutine?,Як StopAsyncIteration завжди,Як SyntaxError,Як asyncio.CancelledError у наступній точці призупинення,Як HTTPStatusError,C
+Чи є cancellation нормальною частиною control flow async systems?,Так,Лише в unit tests,Тільки для HTTP requests,"Ні, це завжди програмна помилка",A
+Як слід звільняти ресурси при cancellation?,Тільки через time.sleep,Завжди через global variables,Через try/finally або async context managers,Ігнорувати cleanup,C
+Чому не слід бездумно поглинати CancelledError?,Він ніколи не виникає,Він автоматично закриває process,Він потрібен тільки для CPU-bound,Це може порушити shutdown і timeout semantics,D
+Для чого asyncio.shield()?,Щоб вимкнути exceptions,Щоб зробити operation CPU-parallel,Щоб захистити внутрішній awaitable від cancellation caller-а,Щоб створити async generator,C
+Який ризик asyncio.shield?,Він завжди видаляє Task,Операція може продовжуватися після втрати інтересу caller-а,Він перетворює I/O на CPU-bound,Він вимикає await,B
+Які методи реалізує async context manager?,__aiter__ і __anext__,__enter__ і __exit__ лише,__aenter__ і __aexit__,__iter__ і __next__,C
+Який синтаксис використовується для async context manager?,await with,with await,async with,async context,C
+Для чого contextlib.asynccontextmanager?,Для запуску event loop,Для створення async context manager з async generator function,Для HTTP retry,Для створення thread lock,B
+Що реалізує async iterator?,send та throw,__aiter__ та __anext__,__enter__ та __exit__,__iter__ та __next__ лише,B
+Який синтаксис споживає async iterator?,async for,for await,async while,await for,A
+Що таке async generator?,Thread generator,"Async function з yield, де отримання елементів може включати await",Звичайний list comprehension,TaskGroup,B
+Які synchronization primitives asyncio згадані в лекції?,"Lock, Event, Condition і Semaphore",Process і Pool,Тільки threading.Thread,HTTPX і FastAPI,A
+Для чого asyncio.Lock?,Щоб обмежити HTTP status codes,Щоб створити thread,Щоб запускати кілька tasks одночасно,Щоб critical section одночасно виконувала одна task,D
+Чому race condition можлива навіть в одному thread asyncio?,Тільки через network errors,Tasks можуть перемикатися між читанням і записом shared state у точках await,Бо Python не має атомарних операцій взагалі,Бо asyncio завжди використовує кілька processes,B
+Що таке race condition?,Тип Queue,Залежність результату від неконтрольованого interleaving операцій,Метод TaskGroup,Завжди HTTP timeout,B
+Для чого asyncio.Event?,Щоб одна task повідомила іншим про настання умови,Для обмеження кількості connections,Для mutual exclusion,Для створення CPU process,A
+Що робить Event.set()?,Блокує event loop,Позначає подію як встановлену і дозволяє waiting tasks продовжити,Скасовує всі tasks,Створює Queue,B
+Для чого asyncio.Semaphore?,Для серіалізації JSON,Для запуску необмеженої concurrency,Для створення coroutine object,Для обмеження кількості одночасних операцій,D
+Де Semaphore особливо корисний?,Лише для print,Тільки для CPU arithmetic,Для імпорту модулів,"Для HTTP requests, database connections та інших capacity-limited ресурсів",D
+Чому небезпечно запускати тисячі requests без concurrency limit?,Усі requests стають CPU-bound,"Можна вичерпати sockets, memory, pool, rate limits або перевантажити сервіс",HTTPX автоматично завершує Python,Asyncio не дозволяє більше двох tasks,B
+Для чого asyncio.Queue?,Для HTTP status validation,Для producer-consumer architecture,Для multiprocessing,Для створення event loop,B
+Що робить queue.put()?,Закриває event loop,Створює TaskGroup,Завершує consumer,Асинхронно додає item у queue,D
+Що робить queue.get()?,Асинхронно отримує item із queue,Збільшує maxsize,Скасовує producer,Запускає thread,A
+Для чого queue.task_done()?,Створити Semaphore,Закрити queue назавжди,Додати новий item,"Позначити завершення обробки item, отриманого з queue",D
+Що робить queue.join()?,Видаляє всі items без обробки,"Очікує, доки для кожного put не буде відповідного task_done",Створює producer,Змінює maxsize,B
+Що дає Queue(maxsize=N)?,Необмежену пам'ять,Вимкнення producers,Автоматичний multiprocessing,Обмежений буфер і механізм backpressure,D
+Що таке backpressure?,"Контроль, який не дозволяє producer безмежно накопичувати роботу, якщо consumers не встигають",Механізм serialization,Тип HTTP error,Прискорення CPU через await,A
+Які прості механізми backpressure наведено?,Task.cancel і shield лише,Bounded Queue або Semaphore,time.sleep і print,Threading.Lock і subprocess,B
+"Що станеться, якщо blocking function викликати прямо в event loop?","Нічого, event loop її перерве",Вона запуститься в process,Вона блокуватиме event loop,Вона автоматично стане async,C
+Для чого asyncio.to_thread()?,Для заміни await,Для HTTP status handling,Для створення process pool,Для виконання blocking function у worker thread без блокування event loop,D
+Для яких функцій to_thread особливо зручний?,Тільки для async functions,Для створення Queue,Для legacy synchronous I/O libraries,Для будь-якого важкого CPU-bound коду як універсальне рішення,C
+Чому to_thread не є універсальним рішенням для важкого CPU-bound коду?,"CPU-bound workloads можуть потребувати multiprocessing, ProcessPoolExecutor або native code",Бо asyncio забороняє CPU operations,Бо thread не може викликати functions,Бо to_thread працює тільки з JSON,A
+Що може знадобитися для важких CPU-bound workloads?,Тільки HTTPX,Тільки asyncio.sleep,multiprocessing або ProcessPoolExecutor,Лише Event,C
+Чому HTTP добре підходить для async?,HTTP не має latency,HTTP автоматично використовує multiprocessing,HTTP завжди CPU-bound,HTTP requests значну частину часу очікують network I/O,D
+Який HTTPX class використовується для async HTTP requests?,asyncio.HttpClient,httpx.SyncServer,httpx.AsyncClient,requests.Session лише,C
+Чому бажано повторно використовувати один AsyncClient для групи requests?,Щоб уникнути await,Для ефективного connection pooling,Щоб вимкнути timeout,Щоб усі requests стали послідовними,B
+Як виконати кілька незалежних HTTP requests конкурентно?,Через один blocking requests.get у циклі,Наприклад через asyncio.gather з одним AsyncClient,Тільки через multiprocessing,Через послідовні time.sleep,B
+Як обмежити HTTP concurrency на рівні application?,Через asyncio.run у кожному request,Через response.raise_for_status,Через asyncio.Semaphore,Через JSON parser,C
+Для чого httpx.Limits?,Для контролю розміру HTTP connection pool,Для Pydantic validation,Для обмеження CPU cores,Для створення TaskGroup,A
+Що може контролювати httpx.Limits у прикладі?,max_connections і max_keepalive_connections,Кількість Python modules,Task cancellation,Тільки HTTP status,A
+Чому timeout має бути частиною дизайну HTTP client?,Щоб усі requests завершувалися успіхом,Щоб уникнути JSON,Щоб вимкнути connection pool,Зовнішні операції не повинні чекати безмежно,D
+Які granular timeout settings підтримує HTTPX за лекцією?,Лише GET і POST,Тільки CPU і memory,"Connect, read, write та pool",Path і query,C
+Чим httpx.RequestError відрізняється від HTTPStatusError?,Це повністю однакові exceptions,HTTPStatusError означає лише JSON error,RequestError виникає тільки при 200,"RequestError описує transport problem, HTTPStatusError — unsuccessful HTTP status",D
+Коли retry в async HTTP-коді доречний?,Для будь-якої помилки без обмежень,Для transient failures з урахуванням idempotency,Тільки після успішного 200,Завжди для POST,B
+Який sleep слід використовувати для async retry backoff?,time.sleep(...),await asyncio.sleep(...),os.sleep(...),threading.sleep(...),B
+Що таке retry storm?,"Масове одночасне повторення requests після збою, яке створює додаткове навантаження",Тип Semaphore,Один успішний retry,Async generator,A
+Які елементи production retry policy згадані?,Безмежні retries без pause,Тільки time.sleep,"Exponential backoff, jitter, retry limits та server hints",Лише HTTP 200,C
+Для чого asyncio.as_completed()?,Для блокування tasks,Для обробки результатів у порядку фактичного завершення,Для збереження початкового порядку як gather,Для створення Queue,B
+Коли gather зручніший за as_completed?,Тільки для CPU-bound,Коли потрібні всі результати в початковому порядку,Коли не потрібні результати,Коли треба обробляти перший завершений результат негайно,B
+Коли as_completed корисний?,Тільки для одного awaitable,Коли потрібно суворо зберегти порядок аргументів,Для створення event loop,Коли ранні результати потрібно обробляти одразу після завершення,D
+Для чого TaskGroup у HTTP batch?,Для connection pooling,Для structured scope і керованого cancellation при помилках,Для blocking I/O,Для JSON serialization,B
+Що може містити асинхронний pipeline?,Лише CPU process,Тільки один synchronous loop,Тільки HTTP headers,"Producer, bounded Queue та кілька consumers",D
+Коли async def доречний у FastAPI endpoint?,Коли виконується blocking requests.get без offloading,Для будь-якого CPU-bound loop,Тільки коли немає I/O,Коли використовуються await-compatible I/O libraries,D
+Чому blocking synchronous DB/HTTP call небезпечний у async endpoint?,Він створює TaskGroup,Може блокувати event loop,Він вимикає database,Він автоматично стає awaitable,B
+Що таке SQLAlchemy AsyncSession у контексті лекції?,Асинхронний API для роботи з БД через сумісний async dialect/driver,Спосіб зробити будь-який sync driver асинхронним автоматично,HTTP client,Thread pool,A
+Чи перетворює AsyncSession будь-який database driver на async?,Лише для SQLite,Тільки через to_thread автоматично,"Ні, потрібен сумісний async dialect/driver","Так, завжди",C
+Для чого asyncio debug mode?,"Для виявлення повільних callbacks, забутих awaits та інших проблем",Для прискорення production у десять разів,Для вимкнення warnings,Для створення threads,A
+Що означає warning 'coroutine was never awaited'?,"Async function була викликана, але створену coroutine не await-или",Coroutine успішно завершилася,Event loop працює паралельно,Task була cancelled,A
+Чому nested asyncio.run є помилкою?,asyncio.run не слід викликати всередині вже активного event loop,Він працює лише в threads,asyncio.run можна викликати тільки двічі,Він заборонений у main,A
+Що слід використовувати всередині async function замість нового asyncio.run()?,subprocess.run,await,time.sleep,threading.Lock,B
+Чому надмірна кількість Tasks небезпечна?,create_task завжди безкоштовний,Event loop виконує лише одну task за програму,Tasks не займають memory,"Tasks споживають ресурси, а необмежена concurrency може перевантажити систему",D
