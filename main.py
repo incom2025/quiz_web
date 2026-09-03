@@ -3,6 +3,11 @@ import csv
 import random
 import secrets
 import sqlite3
+import threading
+import asyncio
+import time
+from functools import partial
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from typing import Dict, List, Any, Optional
@@ -27,6 +32,11 @@ ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
 LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
 
+# Оптимізація для малих Render-інстансів
+CONFIG_CACHE_SECONDS = float(os.getenv("CONFIG_CACHE_SECONDS", "2"))
+SESSION_GRACE_SECONDS = int(os.getenv("SESSION_GRACE_SECONDS", str(15 * 60)))
+SQLITE_BUSY_TIMEOUT_MS = int(os.getenv("SQLITE_BUSY_TIMEOUT_MS", "10000"))
+
 KYIV_TZ = ZoneInfo("Europe/Kyiv")
 
 
@@ -37,6 +47,13 @@ def now_kyiv() -> datetime:
 # =========================
 # База даних
 # =========================
+def db_connect():
+    """SQLite-підключення з очікуванням блокування під час масових submit-запитів."""
+    con = sqlite3.connect(DB_FILE, timeout=max(1.0, SQLITE_BUSY_TIMEOUT_MS / 1000.0))
+    con.execute(f"PRAGMA busy_timeout = {SQLITE_BUSY_TIMEOUT_MS}")
+    return con
+
+
 def add_column_if_not_exists(con, table_name, column_name, column_type):
     columns = con.execute(f"PRAGMA table_info({table_name})").fetchall()
     existing_columns = [col[1] for col in columns]
@@ -48,7 +65,9 @@ def add_column_if_not_exists(con, table_name, column_name, column_type):
 
 
 def db_init():
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
+        con.execute("PRAGMA journal_mode=WAL")
+        con.execute("PRAGMA synchronous=NORMAL")
         con.execute("""
             CREATE TABLE IF NOT EXISTS results(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,7 +125,7 @@ def db_init():
 
 
 def db_set_setting(key: str, value: str):
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         con.execute(
             """
             INSERT INTO settings(key, value)
@@ -116,10 +135,14 @@ def db_set_setting(key: str, value: str):
             (key, value),
         )
         con.commit()
+    try:
+        _invalidate_config_cache()
+    except NameError:
+        pass
 
 
 def db_get_setting(key: str) -> Optional[str]:
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         row = con.execute(
             "SELECT value FROM settings WHERE key = ?",
             (key,)
@@ -128,13 +151,17 @@ def db_get_setting(key: str) -> Optional[str]:
 
 
 def db_delete_setting(key: str):
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         con.execute("DELETE FROM settings WHERE key = ?", (key,))
         con.commit()
+    try:
+        _invalidate_config_cache()
+    except NameError:
+        pass
 
 
 def db_insert_test_config(config: Dict[str, Any]):
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         con.execute("""
             INSERT INTO test_config(
                 academic_year,
@@ -186,7 +213,7 @@ def db_insert_result(
     total: int,
     config: Dict[str, str],
 ):
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         con.execute("""
             INSERT INTO results(
                 ts,
@@ -248,7 +275,7 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
         "Кінець сеансу",
     ])
 
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         rows = con.execute("""
             SELECT
                 ts,
@@ -277,12 +304,25 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
 
 
 # =========================
+# Кеші та обмеження ресурсів
+# =========================
+_CONFIG_CACHE: Dict[str, Any] = {"value": None, "loaded_at": 0.0}
+_CONFIG_LOCK = threading.Lock()
+_QUESTION_CACHE: Dict[str, Dict[str, Any]] = {}
+_QUESTION_CACHE_LOCK = threading.Lock()
+_SHEETS_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gsheets")
+
+
+# =========================
 # Lifespan
 # =========================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_init()
-    yield
+    try:
+        yield
+    finally:
+        _SHEETS_EXECUTOR.shutdown(wait=False, cancel_futures=False)
 
 
 app = FastAPI(lifespan=lifespan)
@@ -330,43 +370,56 @@ def make_lesson_id(
     return f"{academic_year}_sem_{semester}_{discipline}_lecture_{lecture_number}"
 
 
+def _invalidate_config_cache():
+    with _CONFIG_LOCK:
+        _CONFIG_CACHE["value"] = None
+        _CONFIG_CACHE["loaded_at"] = 0.0
+
+
+def _read_all_settings() -> Dict[str, str]:
+    with db_connect() as con:
+        rows = con.execute("SELECT key, value FROM settings").fetchall()
+    return {str(k): str(v) for k, v in rows}
+
+
 def get_current_config() -> Dict[str, str]:
-    academic_year = db_get_setting("academic_year") or "2025-2026"
-    semester = db_get_setting("semester") or "2"
-    discipline_name = db_get_setting("discipline_name") or "Інструментарій роботи з даними"
-    lecture_number = db_get_setting("lecture_number") or "1"
+    now_mono = time.monotonic()
+    with _CONFIG_LOCK:
+        cached = _CONFIG_CACHE.get("value")
+        loaded_at = float(_CONFIG_CACHE.get("loaded_at") or 0.0)
+        if cached is not None and now_mono - loaded_at < CONFIG_CACHE_SECONDS:
+            return dict(cached)
 
-    worksheet_name = db_get_setting("worksheet_name") or make_worksheet_name(
-        academic_year,
-        semester,
-        discipline_name
-    )
+    settings = _read_all_settings()
+    academic_year = settings.get("academic_year") or "2025-2026"
+    semester = settings.get("semester") or "2"
+    discipline_name = settings.get("discipline_name") or "Професійний Python"
+    lecture_number = settings.get("lecture_number") or "1"
+    worksheet_name = settings.get("worksheet_name") or make_worksheet_name(academic_year, semester, discipline_name)
+    lesson_id = settings.get("lesson_id") or make_lesson_id(academic_year, semester, discipline_name, lecture_number)
 
-    lesson_id = db_get_setting("lesson_id") or make_lesson_id(
-        academic_year,
-        semester,
-        discipline_name,
-        lecture_number
-    )
-
-    return {
+    config = {
         "academic_year": academic_year,
         "semester": semester,
         "discipline_name": discipline_name,
         "lecture_number": lecture_number,
-        "test_date": db_get_setting("test_date") or now_kyiv().strftime("%Y-%m-%d"),
-        "weekday": db_get_setting("weekday") or "Понеділок",
-        "start_time": db_get_setting("start_time") or "09:00",
-        "end_time": db_get_setting("end_time") or "10:00",
-        "duration_minutes": db_get_setting("duration_minutes") or str(TEST_DURATION_SECONDS // 60),
-        "questions_count": db_get_setting("questions_count") or str(QUESTIONS_PER_TEST),
-        "csv_file": db_get_setting("csv_file") or CSV_FILE,
-        "results_db": db_get_setting("results_db") or DB_FILE,
+        "test_date": settings.get("test_date") or now_kyiv().strftime("%Y-%m-%d"),
+        "weekday": settings.get("weekday") or "Понеділок",
+        "start_time": settings.get("start_time") or "09:00",
+        "end_time": settings.get("end_time") or "10:00",
+        "duration_minutes": settings.get("duration_minutes") or str(TEST_DURATION_SECONDS // 60),
+        "questions_count": settings.get("questions_count") or str(QUESTIONS_PER_TEST),
+        "csv_file": settings.get("csv_file") or CSV_FILE,
+        "results_db": settings.get("results_db") or DB_FILE,
         "worksheet_name": worksheet_name,
-        "teams_group": db_get_setting("teams_group") or "",
-        "test_link_name": db_get_setting("test_link_name") or "",
+        "teams_group": settings.get("teams_group") or "",
+        "test_link_name": settings.get("test_link_name") or "",
         "lesson_id": lesson_id,
     }
+    with _CONFIG_LOCK:
+        _CONFIG_CACHE["value"] = dict(config)
+        _CONFIG_CACHE["loaded_at"] = now_mono
+    return config
 
 
 def _get_lesson_id() -> str:
@@ -456,7 +509,7 @@ def student_already_passed(
     grp: str,
     lesson_id: str
 ) -> bool:
-    with sqlite3.connect(DB_FILE) as con:
+    with db_connect() as con:
         row = con.execute("""
             SELECT id FROM results
             WHERE lower(trim(surname)) = lower(trim(?))
@@ -499,28 +552,31 @@ def routes():
 # Робота з питаннями
 # =========================
 def load_questions_from_csv(path: str, questions_per_test: int) -> List[dict]:
+    """Читає CSV один раз і перевикористовує банк, доки файл не зміниться."""
     if not os.path.exists(path):
         raise FileNotFoundError(f"Не знайдено файл з питаннями: {path}")
 
+    stat = os.stat(path)
+    signature = (stat.st_mtime_ns, stat.st_size)
+    with _QUESTION_CACHE_LOCK:
+        cached = _QUESTION_CACHE.get(path)
+        if cached and cached.get("signature") == signature:
+            questions = cached["questions"]
+            if len(questions) < questions_per_test:
+                raise ValueError(f"У CSV замало коректних питань: {len(questions)}. Потрібно щонайменше {questions_per_test}.")
+            return questions
+
     with open(path, "r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
-
         required = {"Question", "A", "B", "C", "D", "Prav_vid"}
-
         if not required.issubset(set(reader.fieldnames or [])):
-            raise ValueError(
-                f"CSV має містити колонки: {', '.join(sorted(required))}. "
-                f"Зараз є: {reader.fieldnames}"
-            )
+            raise ValueError(f"CSV має містити колонки: {', '.join(sorted(required))}. Зараз є: {reader.fieldnames}")
 
-        questions = []
-
+        questions: List[dict] = []
         for row in reader:
             pv = (row.get("Prav_vid") or "").strip().upper()
-
             if pv not in {"A", "B", "C", "D"}:
                 continue
-
             q = {
                 "Question": (row.get("Question") or "").strip(),
                 "A": (row.get("A") or "").strip(),
@@ -529,17 +585,31 @@ def load_questions_from_csv(path: str, questions_per_test: int) -> List[dict]:
                 "D": (row.get("D") or "").strip(),
                 "Prav_vid": pv,
             }
-
             if q["Question"] and all(q[k] for k in ["A", "B", "C", "D"]):
                 questions.append(q)
 
-        if len(questions) < questions_per_test:
-            raise ValueError(
-                f"У CSV замало коректних питань: {len(questions)}. "
-                f"Потрібно щонайменше {questions_per_test}."
-            )
+    if len(questions) < questions_per_test:
+        raise ValueError(f"У CSV замало коректних питань: {len(questions)}. Потрібно щонайменше {questions_per_test}.")
 
-        return questions
+    with _QUESTION_CACHE_LOCK:
+        _QUESTION_CACHE[path] = {"signature": signature, "questions": questions}
+    return questions
+
+
+def cleanup_expired_sessions() -> int:
+    """Звільняє RAM від сесій студентів, які покинули тест і не натиснули 'Завершити'."""
+    now_ts = now_kyiv().timestamp()
+    expired = []
+    for sid, sess in list(SESSIONS.items()):
+        try:
+            duration = int(sess["config"]["duration_minutes"]) * 60
+        except Exception:
+            duration = TEST_DURATION_SECONDS
+        if now_ts - float(sess.get("started", now_ts)) > duration + SESSION_GRACE_SECONDS:
+            expired.append(sid)
+    for sid in expired:
+        SESSIONS.pop(sid, None)
+    return len(expired)
 
 
 # =========================
@@ -563,6 +633,8 @@ def start(
     name: str = Form(...),
     grp: str = Form(...),
 ):
+    cleanup_expired_sessions()
+
     surname = surname.strip()
     name = name.strip()
     grp = grp.strip()
@@ -609,6 +681,7 @@ def start(
 
 @app.get("/quiz/{session_id}", response_class=HTMLResponse)
 def quiz(request: Request, session_id: str):
+    cleanup_expired_sessions()
     sess = SESSIONS.get(session_id)
 
     if not sess:
@@ -632,10 +705,14 @@ def quiz(request: Request, session_id: str):
 
 @app.post("/submit/{session_id}", response_class=HTMLResponse)
 async def submit(request: Request, session_id: str):
+    cleanup_expired_sessions()
     sess = SESSIONS.get(session_id)
 
     if not sess:
         return RedirectResponse("/", status_code=303)
+    if sess.get("submitting"):
+        raise HTTPException(status_code=409, detail="Результат уже обробляється.")
+    sess["submitting"] = True
 
     form = await request.form()
     questions = sess["questions"]
@@ -660,7 +737,10 @@ async def submit(request: Request, session_id: str):
 
     if _sheets_enabled():
         try:
-            upsert_score_by_lesson(
+            # Один Google Sheets запис одночасно. Інші submit не блокують event loop Uvicorn.
+            loop = asyncio.get_running_loop()
+            job = partial(
+                upsert_score_by_lesson,
                 sheet_id=GSHEET_ID,
                 lesson_id=config["test_date"],
                 surname=sess["surname"],
@@ -670,6 +750,7 @@ async def submit(request: Request, session_id: str):
                 total=len(questions),
                 worksheet_name=config["worksheet_name"],
             )
+            await loop.run_in_executor(_SHEETS_EXECUTOR, job)
         except Exception as e:
             print(f"[Sheets] write failed: {type(e).__name__}: {e}")
     else:
@@ -776,6 +857,9 @@ async def admin_config_save(
     for key_name, value in config.items():
         db_set_setting(key_name, str(value))
 
+    with _QUESTION_CACHE_LOCK:
+        _QUESTION_CACHE.clear()
+
     db_insert_test_config({
         "academic_year": academic_year,
         "semester": semester,
@@ -857,6 +941,19 @@ def admin_clear_lesson(key: str = Query(...)):
     db_delete_setting("lesson_id")
 
     return {"ok": True, "lesson_id_db": None}
+
+
+@app.get("/admin/health")
+def admin_health(key: str = Query(...)):
+    _admin_check(key)
+    cleanup_expired_sessions()
+    return {
+        "ok": True,
+        "active_sessions": len(SESSIONS),
+        "question_cache_files": len(_QUESTION_CACHE),
+        "config_cached": _CONFIG_CACHE.get("value") is not None,
+        "kyiv_now": now_kyiv().isoformat(timespec="seconds"),
+    }
 
 
 @app.get("/admin/export")
