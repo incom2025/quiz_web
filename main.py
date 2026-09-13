@@ -13,9 +13,10 @@ from zoneinfo import ZoneInfo
 from typing import Dict, List, Any, Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Form, HTTPException, Query
+from fastapi import FastAPI, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 
 from google_sheets_writer import upsert_score_by_lesson
 
@@ -27,7 +28,8 @@ CSV_FILE = os.getenv("CSV_FILE", "questions_lecture2_50_quizweb_letters.csv")
 DB_FILE = os.getenv("DB_FILE", "results.db")
 TEST_DURATION_SECONDS = int(os.getenv("TEST_DURATION_SECONDS", str(7 * 60)))
 QUESTIONS_PER_TEST = int(os.getenv("QUESTIONS_PER_TEST", "10"))
-ADMIN_KEY = os.getenv("ADMIN_KEY", "my-secret-key")
+ADMIN_KEY = os.environ["ADMIN_KEY"]
+SESSION_SECRET = os.environ["SESSION_SECRET"]
 
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
 LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
@@ -325,7 +327,22 @@ async def lifespan(app: FastAPI):
         _SHEETS_EXECUTOR.shutdown(wait=False, cancel_futures=False)
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
+)
+
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=SESSION_SECRET,
+    session_cookie="quiz_admin_session",
+    max_age=60 * 60,
+    same_site="strict",
+    https_only=True,
+)
+
 templates = Jinja2Templates(directory="templates")
 
 SESSIONS: Dict[str, Dict[str, Any]] = {}
@@ -334,9 +351,9 @@ SESSIONS: Dict[str, Dict[str, Any]] = {}
 # =========================
 # Допоміжні функції
 # =========================
-def _admin_check(key: str):
-    if key != ADMIN_KEY:
-        raise HTTPException(status_code=403, detail="Forbidden")
+def _require_admin(request: Request):
+    if request.session.get("admin_authenticated") is not True:
+        raise HTTPException(status_code=401, detail="Administrator authentication required")
 
 
 def _safe_name(value: str) -> str:
@@ -536,7 +553,8 @@ def ping():
 
 
 @app.get("/routes")
-def routes():
+def routes(request: Request):
+    _require_admin(request)
     out = []
     for route in app.routes:
         methods = ",".join(sorted(getattr(route, "methods", []) or []))
@@ -769,23 +787,105 @@ async def submit(request: Request, session_id: str):
 # =========================
 # Панель лектора
 # =========================
-@app.get("/admin/config", response_class=HTMLResponse)
-def admin_config_page(request: Request, key: str = Query(...)):
-    _admin_check(key)
+@app.get("/admin/login", response_class=HTMLResponse)
+def admin_login_page(request: Request):
+    if request.session.get("admin_authenticated") is True:
+        return RedirectResponse("/admin/config", status_code=303)
 
+    return HTMLResponse("""
+    <!DOCTYPE html>
+    <html lang="uk">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Вхід адміністратора</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f5f7fb;
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .card {
+                width: min(420px, calc(100% - 32px));
+                background: white;
+                border-radius: 14px;
+                box-shadow: 0 10px 30px rgba(0,0,0,.08);
+                padding: 28px;
+            }
+            h1 { margin-top: 0; font-size: 26px; }
+            input {
+                width: 100%;
+                box-sizing: border-box;
+                padding: 12px 14px;
+                margin: 12px 0 16px;
+                border: 1px solid #cfd6e4;
+                border-radius: 8px;
+                font-size: 16px;
+            }
+            button {
+                width: 100%;
+                padding: 12px 16px;
+                border: 0;
+                border-radius: 8px;
+                background: #2563eb;
+                color: white;
+                font-size: 16px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>Вхід адміністратора</h1>
+            <form method="post" action="/admin/login">
+                <label for="admin_key">Адміністративний ключ</label>
+                <input id="admin_key" type="password" name="admin_key"
+                       autocomplete="current-password" required>
+                <button type="submit">Увійти</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    """)
+
+
+@app.post("/admin/login")
+def admin_login(request: Request, admin_key: str = Form(...)):
+    if not secrets.compare_digest(admin_key, ADMIN_KEY):
+        raise HTTPException(status_code=403, detail="Невірний адміністративний ключ")
+
+    request.session.clear()
+    request.session["admin_authenticated"] = True
+    return RedirectResponse("/admin/config", status_code=303)
+
+
+@app.post("/admin/logout")
+def admin_logout(request: Request):
+    request.session.clear()
+    return RedirectResponse("/admin/login", status_code=303)
+
+
+@app.get("/admin/config", response_class=HTMLResponse)
+def admin_config_page(request: Request):
+    _require_admin(request)
     settings = get_current_config()
 
     return templates.TemplateResponse("admin_config.html", {
         "request": request,
         "settings": settings,
-        "key": key,
+        # Тимчасово залишено для сумісності зі старим шаблоном.
+        # Секрет у шаблон більше не передається.
+        "key": "",
     })
 
 
 @app.post("/admin/config/save", response_class=HTMLResponse)
 async def admin_config_save(
     request: Request,
-    key: str = Form(...),
     academic_year: str = Form(...),
     semester: str = Form(...),
     discipline_name: str = Form(...),
@@ -801,7 +901,7 @@ async def admin_config_save(
     teams_group: str = Form(""),
     test_link_name: str = Form(""),
 ):
-    _admin_check(key)
+    _require_admin(request)
 
     academic_year = academic_year.strip()
     semester = semester.strip()
@@ -882,7 +982,7 @@ async def admin_config_save(
     return templates.TemplateResponse("admin_config_saved.html", {
         "request": request,
         "config": config,
-        "key": key,
+        "key": "",
     })
 
 
@@ -891,35 +991,31 @@ async def admin_config_save(
 # =========================
 @app.get("/admin/set_lesson")
 def admin_set_lesson(
-    key: str = Query(...),
-    lesson: str = Query(...),
+    request: Request,
+    lesson: str,
 ):
-    _admin_check(key)
+    _require_admin(request)
 
     lesson = lesson.strip()
-
     if not lesson:
         raise HTTPException(status_code=400, detail="lesson is empty")
 
     db_set_setting("lesson_id", lesson)
-
     return {"ok": True, "lesson_id": lesson}
 
 
 @app.get("/admin/set_lesson_today")
-def admin_set_lesson_today(key: str = Query(...)):
-    _admin_check(key)
+def admin_set_lesson_today(request: Request):
+    _require_admin(request)
 
     lesson = now_kyiv().strftime("%Y-%m-%d")
     db_set_setting("lesson_id", lesson)
-
     return {"ok": True, "lesson_id": lesson}
 
 
 @app.get("/admin/get_lesson")
-def admin_get_lesson(key: str = Query(...)):
-    _admin_check(key)
-
+def admin_get_lesson(request: Request):
+    _require_admin(request)
     config = get_current_config()
 
     return {
@@ -935,17 +1031,15 @@ def admin_get_lesson(key: str = Query(...)):
 
 
 @app.get("/admin/clear_lesson")
-def admin_clear_lesson(key: str = Query(...)):
-    _admin_check(key)
-
+def admin_clear_lesson(request: Request):
+    _require_admin(request)
     db_delete_setting("lesson_id")
-
     return {"ok": True, "lesson_id_db": None}
 
 
 @app.get("/admin/health")
-def admin_health(key: str = Query(...)):
-    _admin_check(key)
+def admin_health(request: Request):
+    _require_admin(request)
     cleanup_expired_sessions()
     return {
         "ok": True,
@@ -957,9 +1051,23 @@ def admin_health(key: str = Query(...)):
 
 
 @app.get("/admin/export")
-def admin_export(key: str = Query(...)):
-    _admin_check(key)
-
+def admin_export(request: Request):
+    _require_admin(request)
     path = export_results_to_xlsx("results.xlsx")
-
     return FileResponse(path, filename="results.xlsx")
+
+
+# =========================
+# Базові HTTP security headers
+# =========================
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+
+    if request.url.path.startswith("/admin"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+
+    return response
