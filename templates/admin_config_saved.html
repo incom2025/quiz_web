@@ -2,6 +2,8 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Налаштування збережено</title>
 
     <style>
@@ -21,8 +23,17 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.08);
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
         h1 {
             color: #166534;
+            margin: 0;
         }
 
         table {
@@ -34,6 +45,7 @@
         td {
             border: 1px solid #ddd;
             padding: 10px;
+            word-break: break-word;
         }
 
         td:first-child {
@@ -42,100 +54,219 @@
             width: 35%;
         }
 
-        a {
-            display: inline-block;
+        .success-box {
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            color: #166534;
+            border-radius: 4px;
+        }
+
+        .buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
             margin-top: 25px;
-            background: #2563eb;
-            color: white;
+        }
+
+        .button {
+            display: inline-block;
             padding: 12px 20px;
             border-radius: 7px;
             text-decoration: none;
+            color: white;
+            background: #2563eb;
         }
 
-        a.export {
+        .button:hover {
+            opacity: 0.9;
+        }
+
+        .button.export {
             background: #16a34a;
+        }
+
+        .button.admin {
+            background: #475569;
+        }
+
+        .logout {
+            display: inline-block;
+            padding: 9px 16px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .logout:hover {
+            background: #fecaca;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            td:first-child {
+                width: 40%;
+            }
+
+            .buttons {
+                flex-direction: column;
+            }
+
+            .button {
+                text-align: center;
+            }
         }
     </style>
 </head>
 
 <body>
+
 <div class="container">
 
-    <h1>Налаштування тестування збережено</h1>
+    <div class="header">
+
+        <h1>Налаштування тестування збережено</h1>
+
+        <a href="/admin/logout" class="logout">
+            Вийти з адмінки
+        </a>
+
+    </div>
+
+
+    <div class="success-box">
+        Нові параметри тестування успішно збережено.
+    </div>
+
 
     <table>
+
         <tr>
             <td>Навчальний рік</td>
             <td>{{ config.academic_year }}</td>
         </tr>
+
         <tr>
             <td>Семестр</td>
             <td>{{ config.semester }}</td>
         </tr>
+
         <tr>
             <td>Дисципліна</td>
             <td>{{ config.discipline_name }}</td>
         </tr>
+
         <tr>
             <td>Номер лекції</td>
             <td>{{ config.lecture_number }}</td>
         </tr>
+
         <tr>
             <td>Дата тестування</td>
             <td>{{ config.test_date }}</td>
         </tr>
+
         <tr>
             <td>День тижня</td>
             <td>{{ config.weekday }}</td>
         </tr>
+
         <tr>
             <td>Час початку сеансу</td>
             <td>{{ config.start_time }}</td>
         </tr>
+
         <tr>
             <td>Час завершення сеансу</td>
             <td>{{ config.end_time }}</td>
         </tr>
+
         <tr>
             <td>Тривалість тесту</td>
             <td>{{ config.duration_minutes }} хв</td>
         </tr>
+
         <tr>
             <td>Кількість питань</td>
             <td>{{ config.questions_count }}</td>
         </tr>
+
         <tr>
             <td>CSV-файл</td>
             <td>{{ config.csv_file }}</td>
         </tr>
+
         <tr>
             <td>База результатів</td>
             <td>{{ config.results_db }}</td>
         </tr>
+
         <tr>
             <td>Назва листа результатів</td>
             <td>{{ config.worksheet_name }}</td>
         </tr>
+
         <tr>
             <td>Команда Microsoft Teams</td>
             <td>{{ config.teams_group }}</td>
         </tr>
+
         <tr>
             <td>Назва поклику</td>
             <td>{{ config.test_link_name }}</td>
         </tr>
+
         <tr>
             <td>Lesson ID</td>
             <td>{{ config.lesson_id }}</td>
         </tr>
+
     </table>
 
-    <a href="/">Перейти до тестування</a>
 
-    <a class="export" href="/admin/export?key={{ key }}">
-        Завантажити результати в Excel
-    </a>
+    <!--
+        ADMIN_KEY більше не передається
+        ні в URL, ні в HTML.
+
+        Доступ до адміністративних маршрутів
+        контролюється серверною сесією.
+    -->
+
+    <div class="buttons">
+
+        <a class="button admin" href="/admin/config">
+            Повернутися до панелі
+        </a>
+
+        <a class="button" href="/">
+            Перейти до тестування
+        </a>
+
+        <a class="button export" href="/admin/export">
+            Завантажити результати в Excel
+        </a>
+
+    </div>
 
 </div>
+
 </body>
 </html>
