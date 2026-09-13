@@ -2,6 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Панель лектора</title>
 
     <style>
@@ -21,8 +22,16 @@
             box-shadow: 0 0 15px rgba(0,0,0,0.08);
         }
 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
         h1 {
-            margin-top: 0;
+            margin: 0;
             color: #1f2937;
         }
 
@@ -40,7 +49,8 @@
             color: #111827;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             padding: 11px;
             border: 1px solid #cbd5e1;
@@ -90,124 +100,370 @@
             margin-bottom: 25px;
             color: #1e3a8a;
         }
+
+        .logout {
+            display: inline-block;
+            padding: 9px 16px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .logout:hover {
+            background: #fecaca;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .row {
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 
 <body>
+
 <div class="container">
 
-    <h1>Панель керування тестуванням</h1>
+    <div class="header">
+        <h1>Панель керування тестуванням</h1>
 
-    <div class="box">
-        Лектор задає параметри дисципліни, лекції, часу тестування, тривалості тесту,
-        бази результатів, Google Sheets та Microsoft Teams.
+        <a href="/admin/logout" class="logout">
+            Вийти з адмінки
+        </a>
     </div>
 
+    <div class="box">
+        Лектор задає параметри дисципліни, лекції, часу тестування,
+        тривалості тесту, бази результатів, Google Sheets та Microsoft Teams.
+    </div>
+
+
+    <!--
+        ADMIN_KEY тут НЕ передається.
+
+        Авторизація адміністратора виконується сервером
+        через захищену сесію.
+    -->
+
     <form method="post" action="/admin/config/save">
-        <input type="hidden" name="key" value="{{ key }}">
+
+
+        <!-- ============================= -->
+        <!-- 1. Навчальна інформація -->
+        <!-- ============================= -->
 
         <h2>1. Навчальна інформація</h2>
 
         <div class="row">
+
             <div>
                 <label>Навчальний рік</label>
-                <input type="text" name="academic_year" value="{{ settings.academic_year }}" required>
+
+                <input
+                    type="text"
+                    name="academic_year"
+                    value="{{ settings.academic_year }}"
+                    required
+                >
             </div>
+
 
             <div>
                 <label>Семестр</label>
+
                 <select name="semester" required>
-                    <option value="1" {% if settings.semester == "1" %}selected{% endif %}>1 семестр</option>
-                    <option value="2" {% if settings.semester == "2" %}selected{% endif %}>2 семестр</option>
+
+                    <option
+                        value="1"
+                        {% if settings.semester == "1" %}selected{% endif %}
+                    >
+                        1 семестр
+                    </option>
+
+                    <option
+                        value="2"
+                        {% if settings.semester == "2" %}selected{% endif %}
+                    >
+                        2 семестр
+                    </option>
+
                 </select>
             </div>
+
         </div>
 
+
         <label>Назва дисципліни</label>
-        <input type="text" name="discipline_name" value="{{ settings.discipline_name }}" required>
+
+        <input
+            type="text"
+            name="discipline_name"
+            value="{{ settings.discipline_name }}"
+            required
+        >
+
 
         <label>Номер лекції</label>
-        <input type="text" name="lecture_number" value="{{ settings.lecture_number }}" required>
+
+        <input
+            type="text"
+            name="lecture_number"
+            value="{{ settings.lecture_number }}"
+            required
+        >
+
+
+
+        <!-- ============================= -->
+        <!-- 2. Дата і час тестування -->
+        <!-- ============================= -->
 
         <h2>2. Дата і час тестування</h2>
 
+
         <div class="row">
+
             <div>
                 <label>Дата тестування</label>
-                <input type="date" name="test_date" value="{{ settings.test_date }}" required>
+
+                <input
+                    type="date"
+                    name="test_date"
+                    value="{{ settings.test_date }}"
+                    required
+                >
             </div>
+
 
             <div>
                 <label>День тижня</label>
+
                 <select name="weekday" required>
-                    <option value="Понеділок" {% if settings.weekday == "Понеділок" %}selected{% endif %}>Понеділок</option>
-                    <option value="Вівторок" {% if settings.weekday == "Вівторок" %}selected{% endif %}>Вівторок</option>
-                    <option value="Середа" {% if settings.weekday == "Середа" %}selected{% endif %}>Середа</option>
-                    <option value="Четвер" {% if settings.weekday == "Четвер" %}selected{% endif %}>Четвер</option>
-                    <option value="Пʼятниця" {% if settings.weekday == "Пʼятниця" %}selected{% endif %}>Пʼятниця</option>
-                    <option value="Субота" {% if settings.weekday == "Субота" %}selected{% endif %}>Субота</option>
-                    <option value="Неділя" {% if settings.weekday == "Неділя" %}selected{% endif %}>Неділя</option>
+
+                    <option
+                        value="Понеділок"
+                        {% if settings.weekday == "Понеділок" %}selected{% endif %}
+                    >
+                        Понеділок
+                    </option>
+
+                    <option
+                        value="Вівторок"
+                        {% if settings.weekday == "Вівторок" %}selected{% endif %}
+                    >
+                        Вівторок
+                    </option>
+
+                    <option
+                        value="Середа"
+                        {% if settings.weekday == "Середа" %}selected{% endif %}
+                    >
+                        Середа
+                    </option>
+
+                    <option
+                        value="Четвер"
+                        {% if settings.weekday == "Четвер" %}selected{% endif %}
+                    >
+                        Четвер
+                    </option>
+
+                    <option
+                        value="Пʼятниця"
+                        {% if settings.weekday == "Пʼятниця" %}selected{% endif %}
+                    >
+                        Пʼятниця
+                    </option>
+
+                    <option
+                        value="Субота"
+                        {% if settings.weekday == "Субота" %}selected{% endif %}
+                    >
+                        Субота
+                    </option>
+
+                    <option
+                        value="Неділя"
+                        {% if settings.weekday == "Неділя" %}selected{% endif %}
+                    >
+                        Неділя
+                    </option>
+
                 </select>
             </div>
+
         </div>
 
+
         <div class="row">
+
             <div>
                 <label>Час початку сеансу тестування</label>
-                <input type="time" name="start_time" value="{{ settings.start_time }}" required>
+
+                <input
+                    type="time"
+                    name="start_time"
+                    value="{{ settings.start_time }}"
+                    required
+                >
             </div>
+
 
             <div>
                 <label>Час завершення сеансу тестування</label>
-                <input type="time" name="end_time" value="{{ settings.end_time }}" required>
+
+                <input
+                    type="time"
+                    name="end_time"
+                    value="{{ settings.end_time }}"
+                    required
+                >
             </div>
+
         </div>
 
+
         <div class="hint">
-            Студент може почати тест тільки у проміжку між часом початку і часом завершення.
-            Якщо він почав тест за хвилину до завершення сеансу, він має повний час на проходження тесту.
+            Студент може почати тест тільки у проміжку між часом початку
+            і часом завершення. Якщо він почав тест за хвилину до завершення
+            сеансу, він має повний час на проходження тесту.
         </div>
+
+
+
+        <!-- ============================= -->
+        <!-- 3. Параметри тесту -->
+        <!-- ============================= -->
 
         <h2>3. Параметри тесту</h2>
 
+
         <div class="row">
+
             <div>
                 <label>Тривалість тесту, хв</label>
-                <input type="number" name="duration_minutes" value="{{ settings.duration_minutes }}" min="1" required>
+
+                <input
+                    type="number"
+                    name="duration_minutes"
+                    value="{{ settings.duration_minutes }}"
+                    min="1"
+                    required
+                >
             </div>
+
 
             <div>
                 <label>Кількість питань</label>
-                <input type="number" name="questions_count" value="{{ settings.questions_count }}" min="1" required>
+
+                <input
+                    type="number"
+                    name="questions_count"
+                    value="{{ settings.questions_count }}"
+                    min="1"
+                    required
+                >
             </div>
+
         </div>
 
+
         <label>CSV-файл із питаннями</label>
-        <input type="text" name="csv_file" value="{{ settings.csv_file }}" required>
+
+        <input
+            type="text"
+            name="csv_file"
+            value="{{ settings.csv_file }}"
+            required
+        >
+
+
+
+        <!-- ============================= -->
+        <!-- 4. База результатів -->
+        <!-- ============================= -->
 
         <h2>4. База результатів</h2>
 
+
         <label>Назва бази даних результатів тестування</label>
-        <input type="text" name="results_db" value="{{ settings.results_db }}" required>
+
+        <input
+            type="text"
+            name="results_db"
+            value="{{ settings.results_db }}"
+            required
+        >
+
 
         <label>Назва листа в базі результатів</label>
-        <input type="text" value="{{ settings.worksheet_name }}" readonly>
+
+        <input
+            type="text"
+            value="{{ settings.worksheet_name }}"
+            readonly
+        >
+
 
         <div class="hint">
-            Назва листа формується автоматично: навчальний рік + семестр + назва предмету.
+            Назва листа формується автоматично:
+            навчальний рік + семестр + назва предмету.
         </div>
+
+
+
+        <!-- ============================= -->
+        <!-- 5. Microsoft Teams -->
+        <!-- ============================= -->
 
         <h2>5. Microsoft Teams</h2>
 
+
         <label>Назва команди в Microsoft Teams</label>
-        <input type="text" name="teams_group" value="{{ settings.teams_group }}">
+
+        <input
+            type="text"
+            name="teams_group"
+            value="{{ settings.teams_group }}"
+        >
+
 
         <label>Назва поклику на тестування</label>
-        <input type="text" name="test_link_name" value="{{ settings.test_link_name }}">
 
-        <button type="submit">Зберегти налаштування</button>
+        <input
+            type="text"
+            name="test_link_name"
+            value="{{ settings.test_link_name }}"
+        >
+
+
+        <button type="submit">
+            Зберегти налаштування
+        </button>
+
     </form>
 
 </div>
+
 </body>
 </html>
