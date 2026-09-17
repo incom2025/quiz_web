@@ -405,3 +405,88 @@ def upsert_score_by_lesson(
             "score": score,
             "total": total,
         }
+
+
+# =========================
+# Постійна конфігурація застосунку
+# =========================
+SYSTEM_CONFIG_WORKSHEET = "SYSTEM_CONFIG"
+
+
+def save_system_config(
+    sheet_id: str,
+    config: dict,
+    worksheet_name: str = SYSTEM_CONFIG_WORKSHEET,
+):
+    """
+    Повністю синхронізує службовий аркуш SYSTEM_CONFIG з поточною
+    конфігурацією адміністратора.
+    """
+    if not sheet_id:
+        raise ValueError("sheet_id is required")
+
+    clean_config = {
+        str(key).strip(): "" if value is None else str(value)
+        for key, value in config.items()
+        if str(key).strip()
+    }
+
+    with _WRITE_LOCK:
+        ws = _get_worksheet(sheet_id, worksheet_name)
+        rows = [["key", "value"]]
+        rows.extend([[key, value] for key, value in clean_config.items()])
+
+        _ensure_capacity(
+            ws,
+            required_row=max(2, len(rows)),
+            required_col=2,
+        )
+
+        # Очищаємо лише A:B, щоб видалені/перейменовані параметри
+        # не залишалися в SYSTEM_CONFIG.
+        ws.batch_clear(["A:B"])
+        ws.update(
+            range_name=f"A1:B{len(rows)}",
+            values=rows,
+            value_input_option="RAW",
+        )
+
+    return {"ok": True, "count": len(clean_config)}
+
+
+def load_system_config(
+    sheet_id: str,
+    worksheet_name: str = SYSTEM_CONFIG_WORKSHEET,
+) -> dict[str, str]:
+    """
+    Читає SYSTEM_CONFIG. Якщо аркуша ще немає, повертає порожній словник.
+    Саме порожній результат дозволяє main.py використати локальний SQLite
+    або початкові значення при першому запуску.
+    """
+    if not sheet_id:
+        return {}
+
+    with _WRITE_LOCK:
+        sh = _get_spreadsheet(sheet_id)
+        try:
+            ws = sh.worksheet(worksheet_name)
+        except gspread.WorksheetNotFound:
+            return {}
+
+        # Додаємо в кеш уже знайдений аркуш.
+        _WORKSHEETS[(sheet_id, worksheet_name)] = ws
+        rows = ws.get_all_values()
+
+    result: dict[str, str] = {}
+    for row in rows:
+        if not row:
+            continue
+
+        key = (row[0] or "").strip()
+        if not key or key.casefold() == "key":
+            continue
+
+        value = row[1] if len(row) > 1 else ""
+        result[key] = str(value)
+
+    return result
