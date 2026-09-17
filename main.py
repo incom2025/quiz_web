@@ -18,7 +18,11 @@ from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse, Plai
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from google_sheets_writer import upsert_score_by_lesson
+from google_sheets_writer import (
+    upsert_score_by_lesson,
+    save_system_config,
+    load_system_config,
+)
 
 
 # =========================
@@ -33,6 +37,7 @@ SESSION_SECRET = os.environ["SESSION_SECRET"]
 
 GSHEET_ID = os.getenv("GSHEET_ID", "").strip()
 LESSON_ID_ENV = os.getenv("LESSON_ID", "").strip()
+SYSTEM_CONFIG_WORKSHEET = os.getenv("SYSTEM_CONFIG_WORKSHEET", "SYSTEM_CONFIG").strip() or "SYSTEM_CONFIG"
 
 # Оптимізація для малих Render-інстансів
 CONFIG_CACHE_SECONDS = float(os.getenv("CONFIG_CACHE_SECONDS", "2"))
@@ -305,6 +310,67 @@ def export_results_to_xlsx(xlsx_path: str = "results.xlsx") -> str:
     return xlsx_path
 
 
+
+# =========================
+# Постійна конфігурація в Google Sheets
+# =========================
+def _replace_local_settings(settings: Dict[str, str]):
+    """Замінює локальний SQLite settings даними з постійного SYSTEM_CONFIG."""
+    with db_connect() as con:
+        con.execute("DELETE FROM settings")
+        con.executemany(
+            """
+            INSERT INTO settings(key, value)
+            VALUES(?, ?)
+            ON CONFLICT(key) DO UPDATE SET value=excluded.value
+            """,
+            [(str(k), str(v)) for k, v in settings.items()],
+        )
+        con.commit()
+    try:
+        _invalidate_config_cache()
+    except NameError:
+        pass
+
+
+def restore_settings_from_google() -> bool:
+    """
+    Відновлює налаштування з Google Sheets.
+    True = SYSTEM_CONFIG існує і містить дані.
+    False = Google Sheets вимкнений, аркуш порожній або стався збій.
+    """
+    if not GSHEET_ID:
+        return False
+
+    try:
+        remote = load_system_config(
+            sheet_id=GSHEET_ID,
+            worksheet_name=SYSTEM_CONFIG_WORKSHEET,
+        )
+        if not remote:
+            return False
+
+        _replace_local_settings(remote)
+        print(f"[Config] restored {len(remote)} settings from Google Sheets/{SYSTEM_CONFIG_WORKSHEET}")
+        return True
+    except Exception as e:
+        print(f"[Config] restore from Google Sheets failed: {type(e).__name__}: {e}")
+        return False
+
+
+def persist_settings_to_google(config: Dict[str, Any]) -> bool:
+    """Записує поточну конфігурацію в постійний SYSTEM_CONFIG."""
+    if not GSHEET_ID:
+        return False
+
+    save_system_config(
+        sheet_id=GSHEET_ID,
+        config={str(k): str(v) for k, v in config.items()},
+        worksheet_name=SYSTEM_CONFIG_WORKSHEET,
+    )
+    return True
+
+
 # =========================
 # Кеші та обмеження ресурсів
 # =========================
@@ -321,6 +387,10 @@ _SHEETS_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="gsheets
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db_init()
+    # Render може втратити локальний results.db після redeploy/restart.
+    # Google Sheets/SYSTEM_CONFIG є постійним джерелом останньої
+    # збереженої адміністратором конфігурації.
+    restore_settings_from_google()
     try:
         yield
     finally:
@@ -978,6 +1048,28 @@ async def admin_config_save(
         "test_link_name": test_link_name,
         "lesson_id": lesson_id,
     })
+
+    # Критично: не показуємо "Налаштування збережено", якщо постійна
+    # копія в Google Sheets не була створена. Інакше після redeploy
+    # користувач знову отримає defaults.
+    if not GSHEET_ID:
+        raise HTTPException(
+            status_code=500,
+            detail="GSHEET_ID не налаштований. Конфігурацію збережено лише локально, тому вона не є постійною."
+        )
+
+    try:
+        persist_settings_to_google(config)
+    except Exception as e:
+        print(f"[Config] save to Google Sheets failed: {type(e).__name__}: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Локальну конфігурацію збережено, але не вдалося записати "
+                f"постійну копію в Google Sheets/{SYSTEM_CONFIG_WORKSHEET}: "
+                f"{type(e).__name__}: {e}"
+            ),
+        )
 
     return templates.TemplateResponse("admin_config_saved.html", {
         "request": request,
